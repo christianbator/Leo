@@ -43,10 +43,6 @@ extension LineChartView {
         shapeLayer.strokeColor = viewModel.dataSets.first!.segments.first!.lineStyle.lineColor.cgColor
         
         if let currentViewModel = currentViewModel {
-            guard currentViewModel != viewModel else {
-                return
-            }
-            
             animate(from: currentViewModel, to: viewModel)
         } else {
             shapeLayer.path = path(
@@ -131,6 +127,7 @@ extension LineChartView: CAAnimationDelegate {
         )
         
         let animation = CABasicAnimation(keyPath: Constants.animationKeyPath)
+        animation.delegate = self
         animation.timingFunction = animationTimingFunction
         animation.duration = Constants.animationDuration
         animation.isRemovedOnCompletion = true
@@ -238,6 +235,10 @@ extension LineChartView: CAAnimationDelegate {
         
         return (left: left, right: right)
     }
+    
+    public func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        shapeLayer.removeAnimation(forKey: Constants.animationKey)
+    }
 }
 
 // MARK: - Constants
@@ -247,6 +248,6 @@ extension LineChartView {
     struct Constants {
         static let animationKey: String = "lineChartPath"
         static let animationKeyPath: String = "path"
-        static let animationDuration: TimeInterval = 0.67
+        static let animationDuration: TimeInterval = 0.3
     }
 }

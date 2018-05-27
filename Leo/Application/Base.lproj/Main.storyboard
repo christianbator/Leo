@@ -19,24 +19,22 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="64" translatesAutoresizingMaskIntoConstraints="NO" id="qL7-Nb-dkk">
-                                <rect key="frame" x="112" y="321.5" width="152" height="44"/>
+                                <rect key="frame" x="116" y="411.5" width="144" height="24"/>
                                 <subviews>
                                     <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1D" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hQj-1X-t9c">
-                                        <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
-                                        <color key="backgroundColor" red="0.21110372872627262" green="0.81865284974093266" blue="0.39368341009380103" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="40" height="24"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="44" id="LSu-lT-UkM"/>
-                                            <constraint firstAttribute="height" constant="44" id="pwp-Fh-5Vz"/>
+                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="40" id="LSu-lT-UkM"/>
+                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="24" id="pwp-Fh-5Vz"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="13"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3M" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Nl-uc-XM5">
-                                        <rect key="frame" x="108" y="0.0" width="44" height="44"/>
-                                        <color key="backgroundColor" red="0.21110372872627262" green="0.81865284974093266" blue="0.39368341009380103" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
-                                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <rect key="frame" x="104" y="0.0" width="40" height="24"/>
+                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="13"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
@@ -49,7 +47,7 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="qL7-Nb-dkk" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="8FL-dj-RsR"/>
-                            <constraint firstItem="qL7-Nb-dkk" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="G9r-AT-UsV"/>
+                            <constraint firstItem="qL7-Nb-dkk" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" constant="80" id="G9r-AT-UsV"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>

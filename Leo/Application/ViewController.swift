@@ -23,11 +23,17 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        view.backgroundColor = Style.backgroundColor
+        
         oneDayLabel.layer.cornerRadius = 8
         oneDayLabel.layer.masksToBounds = true
+        oneDayLabel.textColor = Style.textColor
         
         threeMonthLabel.layer.cornerRadius = 8
         threeMonthLabel.layer.masksToBounds = true
+        threeMonthLabel.textColor = Style.textColor.withAlphaComponent(0.6)
+        
+        updateTintColor(Style.nonNegativeColor)
         
         lineChartView = LineChartView()
         view.addSubview(lineChartView)
@@ -36,15 +42,16 @@ class ViewController: UIViewController {
         setupInteraction()
         
         firstDataSet = LineChartDataSetProvider.dataSet(
-            startingAt: CGPoint(x: 0, y: 400),
-            endingAt: CGPoint(x: 300, y: 320),
-            numberOfPoints: 55
+            startingAt: CGPoint(x: 0, y: 20),
+            endingAt: CGPoint(x: 100, y: 47),
+            numberOfPoints: 60
         )
         
         secondDataSet = LineChartDataSetProvider.dataSet(
-            startingAt: CGPoint(x: 5, y: 100),
-            endingAt: CGPoint(x: 225, y: 519),
-            numberOfPoints: 32
+            startingAt: CGPoint(x: 0, y: 30),
+            endingAt: CGPoint(x: 67, y: 58),
+            numberOfPoints: 40,
+            lineColor: Style.negativeColor
         )
     }
     
@@ -67,7 +74,10 @@ extension ViewController {
     
     private func viewModel(from dataSet: LineChartDataSet) -> LineChartViewModel {
         let viewModel = LineChartViewModel(
-            insets: UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10),
+            minX: 0,
+            maxX: 100,
+            minY: 0,
+            maxY: 100,
             dataSets: [dataSet]
         )
         
@@ -83,7 +93,7 @@ extension ViewController {
         lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16).isActive = true
         lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16).isActive = true
         lineChartView.topAnchor.constraint(equalTo: view.topAnchor, constant: 120).isActive = true
-        lineChartView.bottomAnchor.constraint(equalTo: segmentSelectorView.topAnchor, constant: -32).isActive = true
+        lineChartView.bottomAnchor.constraint(equalTo: segmentSelectorView.topAnchor, constant: -100).isActive = true
     }
 }
 
@@ -100,24 +110,25 @@ extension ViewController {
     }
     
     @objc private func oneDayTapped() {
-        oneDayLabel.textColor = .white
-        threeMonthLabel.textColor = .lightGray
+        oneDayLabel.textColor = Style.textColor
+        threeMonthLabel.textColor = Style.textColor.withAlphaComponent(0.6)
         
         lineChartView.configure(with: viewModel(from: firstDataSet))
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.threeMonthTapped()
-        }
+        updateTintColor(Style.nonNegativeColor)
     }
     
     @objc private func threeMonthTapped() {
-        threeMonthLabel.textColor = .white
-        oneDayLabel.textColor = .lightGray
+        threeMonthLabel.textColor = Style.textColor
+        oneDayLabel.textColor = Style.textColor.withAlphaComponent(0.6)
         
         lineChartView.configure(with: viewModel(from: secondDataSet))
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.oneDayTapped()
+        updateTintColor(Style.negativeColor)
+    }
+    
+    private func updateTintColor(_ tintColor: UIColor) {
+        UIView.animate(withDuration: 0.3) {
+            self.oneDayLabel.layer.backgroundColor = tintColor.cgColor
+            self.threeMonthLabel.layer.backgroundColor = tintColor.cgColor
         }
     }
 }

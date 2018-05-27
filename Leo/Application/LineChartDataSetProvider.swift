@@ -13,7 +13,9 @@ class LineChartDataSetProvider {
     static func dataSet(startingAt start: CGPoint,
                         endingAt end: CGPoint,
                         numberOfPoints: Int,
-                        lineStyle: LineStyle =  LineStyle(lineWidth: 2, lineColor: UIColor.red)) -> LineChartDataSet {
+                        lineColor: UIColor = Style.nonNegativeColor) -> LineChartDataSet {
+        
+        let lineStyle = LineStyle(lineWidth: 2, lineColor: lineColor)
         
         let dataPoints = createPoints(
             startingAt: start,
@@ -39,13 +41,13 @@ class LineChartDataSetProvider {
 extension LineChartDataSetProvider {
     
     private static func createPoints(startingAt start: CGPoint, endingAt end: CGPoint, numberOfPoints: Int) -> [LineChartDataPoint] {
-        let absoluteDelta = abs(end.y - start.y)
-        let average = start.y + absoluteDelta / 2
-        let amplitude = 1.5 * absoluteDelta
+        let delta = end.y - start.y
+        let average = start.y + delta / 2
+        let amplitude = 1.5 * abs(delta)
         let interval = (end.x - start.x) / CGFloat(numberOfPoints)
         
-        var points = [LineChartDataPoint(x: start.x, y: end.x)]
-        for i in 0..<numberOfPoints {
+        var points = [LineChartDataPoint(x: start.x, y: start.y)]
+        for i in 1..<numberOfPoints {
             let x = start.x + (CGFloat(i) * interval)
             let y = average + ((2 * CGFloat(drand48()) - 1) * amplitude)
             points.append(LineChartDataPoint(x: x, y: y))

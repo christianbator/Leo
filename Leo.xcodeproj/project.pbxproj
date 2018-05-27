@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA2D94D720BA73750031072E /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2D94D620BA73750031072E /* Style.swift */; };
 		AA8AC63A20B91988008C88BD /* CGPoint+Hashable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC63920B91988008C88BD /* CGPoint+Hashable.swift */; };
 		AA8AC63C20B919B6008C88BD /* Array+Deduped.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC63B20B919B6008C88BD /* Array+Deduped.swift */; };
 		AA8AC63E20B919E0008C88BD /* Path.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC63D20B919E0008C88BD /* Path.swift */; };
@@ -31,6 +32,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AA2D94D620BA73750031072E /* Style.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Style.swift; sourceTree = "<group>"; };
 		AA8AC63920B91988008C88BD /* CGPoint+Hashable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGPoint+Hashable.swift"; sourceTree = "<group>"; };
 		AA8AC63B20B919B6008C88BD /* Array+Deduped.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Deduped.swift"; sourceTree = "<group>"; };
 		AA8AC63D20B919E0008C88BD /* Path.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Path.swift; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 				AAB7C95B20B918FF00D324D3 /* AppDelegate.swift */,
 				AAB7C95D20B918FF00D324D3 /* ViewController.swift */,
 				AA8AC66220BA275A008C88BD /* LineChartDataSetProvider.swift */,
+				AA2D94D620BA73750031072E /* Style.swift */,
 			);
 			path = Application;
 			sourceTree = "<group>";
@@ -248,6 +251,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA8AC64D20BA21C9008C88BD /* LineChartViewModel.swift in Sources */,
+				AA2D94D720BA73750031072E /* Style.swift in Sources */,
 				AA8AC65A20BA2310008C88BD /* LineChartDataSet.swift in Sources */,
 				AAB7C95E20B918FF00D324D3 /* ViewController.swift in Sources */,
 				AA8AC66120BA24B0008C88BD /* LineChartView.swift in Sources */,

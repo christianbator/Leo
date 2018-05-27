@@ -18,3 +18,17 @@ extension CGFloat: CGFloatConvertible {
         return self
     }
 }
+
+extension Double: CGFloatConvertible {
+    
+    public var cgFloatValue: CGFloat {
+        return CGFloat(self)
+    }
+}
+
+extension Int: CGFloatConvertible {
+    
+    public var cgFloatValue: CGFloat {
+        return CGFloat(self)
+    }
+}
