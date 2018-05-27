@@ -42,16 +42,15 @@ class ViewController: UIViewController {
         setupInteraction()
         
         firstDataSet = LineChartDataSetProvider.dataSet(
-            startingAt: CGPoint(x: 0, y: 20),
-            endingAt: CGPoint(x: 100, y: 47),
+            startingAt: CGPoint(x: 0, y: 32),
+            endingAt: CGPoint(x: 100, y: 68),
             numberOfPoints: 60
         )
         
         secondDataSet = LineChartDataSetProvider.dataSet(
-            startingAt: CGPoint(x: 0, y: 30),
-            endingAt: CGPoint(x: 67, y: 58),
-            numberOfPoints: 40,
-            lineColor: Style.negativeColor
+            startingAt: CGPoint(x: 0, y: 41),
+            endingAt: CGPoint(x: 67, y: 17),
+            numberOfPoints: 40
         )
     }
     
@@ -65,6 +64,10 @@ class ViewController: UIViewController {
         lineChartView.configure(with: viewModel(from: firstDataSet))
         
         finishedInitialLayout = true
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
     }
 }
 
@@ -114,7 +117,6 @@ extension ViewController {
         threeMonthLabel.textColor = Style.textColor.withAlphaComponent(0.6)
         
         lineChartView.configure(with: viewModel(from: firstDataSet))
-        updateTintColor(Style.nonNegativeColor)
     }
     
     @objc private func threeMonthTapped() {
@@ -122,13 +124,10 @@ extension ViewController {
         oneDayLabel.textColor = Style.textColor.withAlphaComponent(0.6)
         
         lineChartView.configure(with: viewModel(from: secondDataSet))
-        updateTintColor(Style.negativeColor)
     }
     
     private func updateTintColor(_ tintColor: UIColor) {
-        UIView.animate(withDuration: 0.3) {
-            self.oneDayLabel.layer.backgroundColor = tintColor.cgColor
-            self.threeMonthLabel.layer.backgroundColor = tintColor.cgColor
-        }
+        oneDayLabel.layer.backgroundColor = tintColor.cgColor
+        threeMonthLabel.layer.backgroundColor = tintColor.cgColor
     }
 }

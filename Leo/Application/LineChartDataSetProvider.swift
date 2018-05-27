@@ -42,14 +42,13 @@ extension LineChartDataSetProvider {
     
     private static func createPoints(startingAt start: CGPoint, endingAt end: CGPoint, numberOfPoints: Int) -> [LineChartDataPoint] {
         let delta = end.y - start.y
-        let average = start.y + delta / 2
-        let amplitude = 1.5 * abs(delta)
         let interval = (end.x - start.x) / CGFloat(numberOfPoints)
         
         var points = [LineChartDataPoint(x: start.x, y: start.y)]
         for i in 1..<numberOfPoints {
             let x = start.x + (CGFloat(i) * interval)
-            let y = average + ((2 * CGFloat(drand48()) - 1) * amplitude)
+            let linearY = start.y + CGFloat(i) / CGFloat(numberOfPoints) * delta
+            let y = linearY + ((2 * CGFloat(drand48()) - 1) * delta / 2)
             points.append(LineChartDataPoint(x: x, y: y))
         }
         

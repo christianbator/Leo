@@ -41,6 +41,7 @@ extension LineChartView {
     public func configure(with viewModel: LineChartViewModel) {
         shapeLayer.fillColor = UIColor.clear.cgColor
         shapeLayer.strokeColor = viewModel.dataSets.first!.segments.first!.lineStyle.lineColor.cgColor
+        shapeLayer.lineWidth = viewModel.dataSets.first!.segments.first!.lineStyle.lineWidth
         
         if let currentViewModel = currentViewModel {
             animate(from: currentViewModel, to: viewModel)
@@ -69,12 +70,12 @@ extension LineChartView {
         guard let firstVisualPoint = visualPoints.first else {
             return path.cgPath
         }
-        
+
         path.move(to: firstVisualPoint)
         for visualPoint in visualPoints.dropFirst() {
             path.addLine(to: visualPoint)
         }
-        
+
         return path.cgPath
     }
     
@@ -110,7 +111,6 @@ extension LineChartView {
 extension LineChartView: CAAnimationDelegate {
     
     private func animate(from oldViewModel: LineChartViewModel, to newViewModel: LineChartViewModel) {
-        
         let oldDataPoints = oldViewModel.dataSets.first!.segments.first!.dataPoints
         let newDataPoints = newViewModel.dataSets.first!.segments.first!.dataPoints
         
