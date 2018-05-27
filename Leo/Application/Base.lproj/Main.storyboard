@@ -43,17 +43,27 @@
                                     <constraint firstItem="hQj-1X-t9c" firstAttribute="height" secondItem="5Nl-uc-XM5" secondAttribute="height" id="z4F-e5-zDL"/>
                                 </constraints>
                             </stackView>
+                            <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="7fm-BU-54F">
+                                <rect key="frame" x="46" y="555.5" width="283" height="31"/>
+                                <connections>
+                                    <action selector="sliderValueChanged" destination="BYZ-38-t0r" eventType="valueChanged" id="Glv-DX-RmI"/>
+                                </connections>
+                            </slider>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="qL7-Nb-dkk" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="8FL-dj-RsR"/>
                             <constraint firstItem="qL7-Nb-dkk" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" constant="80" id="G9r-AT-UsV"/>
+                            <constraint firstItem="7fm-BU-54F" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="48" id="HkW-qq-ZbH"/>
+                            <constraint firstItem="7fm-BU-54F" firstAttribute="top" secondItem="qL7-Nb-dkk" secondAttribute="bottom" constant="120" id="cjp-SE-HHH"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="7fm-BU-54F" secondAttribute="trailing" constant="48" id="xi8-Dt-ozS"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
                         <outlet property="oneDayLabel" destination="hQj-1X-t9c" id="Tk9-fN-n5N"/>
                         <outlet property="segmentSelectorView" destination="qL7-Nb-dkk" id="NgC-1X-Urc"/>
+                        <outlet property="slider" destination="7fm-BU-54F" id="22X-qT-AGA"/>
                         <outlet property="threeMonthLabel" destination="5Nl-uc-XM5" id="aJt-3g-JYt"/>
                     </connections>
                 </viewController>

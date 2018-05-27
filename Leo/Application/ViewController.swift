@@ -10,6 +10,7 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    @IBOutlet var slider: UISlider!
     @IBOutlet var segmentSelectorView: UIStackView!
     @IBOutlet var oneDayLabel: UILabel!
     @IBOutlet var threeMonthLabel: UILabel!
@@ -24,6 +25,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         view.backgroundColor = Style.backgroundColor
+        slider.value = Float(LineChartView.Constants.animationDuration)
         
         oneDayLabel.layer.cornerRadius = 8
         oneDayLabel.layer.masksToBounds = true
@@ -42,15 +44,15 @@ class ViewController: UIViewController {
         setupInteraction()
         
         firstDataSet = LineChartDataSetProvider.dataSet(
-            startingAt: CGPoint(x: 0, y: 32),
-            endingAt: CGPoint(x: 100, y: 68),
-            numberOfPoints: 60
+            startingAt: CGPoint(x: 0, y: 41),
+            endingAt: CGPoint(x: 67, y: 17),
+            numberOfPoints: 90
         )
         
         secondDataSet = LineChartDataSetProvider.dataSet(
-            startingAt: CGPoint(x: 0, y: 41),
-            endingAt: CGPoint(x: 67, y: 17),
-            numberOfPoints: 40
+            startingAt: CGPoint(x: 0, y: 32),
+            endingAt: CGPoint(x: 100, y: 68),
+            numberOfPoints: 55
         )
     }
     
@@ -95,8 +97,8 @@ extension ViewController {
     private func constrainLineChartView() {
         lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16).isActive = true
         lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16).isActive = true
-        lineChartView.topAnchor.constraint(equalTo: view.topAnchor, constant: 120).isActive = true
-        lineChartView.bottomAnchor.constraint(equalTo: segmentSelectorView.topAnchor, constant: -100).isActive = true
+        lineChartView.topAnchor.constraint(equalTo: view.topAnchor, constant: 100).isActive = true
+        lineChartView.bottomAnchor.constraint(equalTo: segmentSelectorView.topAnchor, constant: -80).isActive = true
     }
 }
 
@@ -129,5 +131,10 @@ extension ViewController {
     private func updateTintColor(_ tintColor: UIColor) {
         oneDayLabel.layer.backgroundColor = tintColor.cgColor
         threeMonthLabel.layer.backgroundColor = tintColor.cgColor
+        slider.tintColor = tintColor
+    }
+    
+    @IBAction func sliderValueChanged() {
+        LineChartView.Constants.animationDuration = TimeInterval(slider.value)
     }
 }

@@ -42,6 +42,8 @@ extension LineChartView {
         shapeLayer.fillColor = UIColor.clear.cgColor
         shapeLayer.strokeColor = viewModel.dataSets.first!.segments.first!.lineStyle.lineColor.cgColor
         shapeLayer.lineWidth = viewModel.dataSets.first!.segments.first!.lineStyle.lineWidth
+        shapeLayer.lineCap = kCALineCapRound
+        shapeLayer.lineJoin = kCALineCapRound
         
         if let currentViewModel = currentViewModel {
             animate(from: currentViewModel, to: viewModel)
@@ -237,6 +239,10 @@ extension LineChartView: CAAnimationDelegate {
     }
     
     public func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        guard flag else {
+            return
+        }
+        
         shapeLayer.removeAnimation(forKey: Constants.animationKey)
     }
 }
@@ -248,6 +254,6 @@ extension LineChartView {
     struct Constants {
         static let animationKey: String = "lineChartPath"
         static let animationKeyPath: String = "path"
-        static let animationDuration: TimeInterval = 0.3
+        static var animationDuration: TimeInterval = 0.3
     }
 }
