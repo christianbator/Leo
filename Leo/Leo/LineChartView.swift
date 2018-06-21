@@ -106,6 +106,16 @@ extension LineChartView {
         
         return CGPoint(x: adjustedX, y: adjustedY)
     }
+    
+    private func dataPoint(from visualPoint: CGPoint, with viewModel: LineChartViewModel) -> LineChartDataPoint {
+        let xPercentage = visualPoint.x / bounds.width
+        let x = viewModel.minX + xPercentage * viewModel.xRange
+        
+        let yPercentage = (bounds.height - visualPoint.y) / bounds.height
+        let y = viewModel.minY + yPercentage * viewModel.yRange
+        
+        return LineChartDataPoint(x: x, y: y)
+    }
 }
 
 // MARK: - Animation
@@ -125,35 +135,33 @@ extension LineChartView: CAAnimationDelegate {
         let animationEndPath = createAnimationEndPath(
             oldDataPoints: oldDataPoints,
             newDataPoints: newDataPoints,
+            oldViewModel: oldViewModel,
             newViewModel: newViewModel
         )
         
         let animation = CABasicAnimation(keyPath: Constants.animationKeyPath)
         animation.delegate = self
         animation.timingFunction = animationTimingFunction
-        animation.duration = Constants.animationDuration
+        animation.duration = Constants.currentAnimationDuration
         animation.isRemovedOnCompletion = true
         animation.fromValue = animationStartPath
         animation.toValue = animationEndPath
         
+        shapeLayer.path = path(from: newDataPoints, with: newViewModel)
         shapeLayer.removeAnimation(forKey: Constants.animationKey)
         shapeLayer.add(animation, forKey: Constants.animationKey)
-        shapeLayer.path = path(from: newDataPoints, with: newViewModel)
     }
     
     private func createAnimationStartPath(oldDataPoints: [LineChartDataPoint],
                                           newDataPoints: [LineChartDataPoint],
                                           oldViewModel: LineChartViewModel) -> CGPath {
         
-        if shapeLayer.animation(forKey: Constants.animationKey) != nil,
-            let visualPath = shapeLayer.presentation()?.value(forKeyPath: Constants.animationKeyPath) {
-                return visualPath as! CGPath
-        }
-        
         let animationStartPoints = createAnimationStartPoints(
-            from: oldDataPoints,
+            from: existingAnimationPoints(oldViewModel: oldViewModel) ?? oldDataPoints,
             target: newDataPoints
         )
+        
+        print("From: \(animationStartPoints.count)")
         
         let animationStartPath = path(from: animationStartPoints, with: oldViewModel)
         
@@ -162,12 +170,15 @@ extension LineChartView: CAAnimationDelegate {
     
     private func createAnimationEndPath(oldDataPoints: [LineChartDataPoint],
                                         newDataPoints: [LineChartDataPoint],
+                                        oldViewModel: LineChartViewModel,
                                         newViewModel: LineChartViewModel) -> CGPath {
         
         let animationEndPoints = createAnimationEndPoints(
-            from: oldDataPoints,
+            from: existingAnimationPoints(oldViewModel: oldViewModel) ?? oldDataPoints,
             target: newDataPoints
         )
+        
+        print("To: \(animationEndPoints.count)")
         
         let animationEndPath = path(from: animationEndPoints, with: newViewModel)
         
@@ -179,15 +190,20 @@ extension LineChartView: CAAnimationDelegate {
             return source
         }
         
-        let normalizedSourcePoints = source.map { normalize($0, in: source) }
-        let normalizedTargetPoints = target.map { normalize($0, in: target) }
+        let normalizedSourcePoints = source.map { sourcePoint in
+            normalize(sourcePoint, in: source)
+        }
+        
+        let normalizedTargetPoints = target.map { targetPoint in
+            normalize(targetPoint, in: target)
+        }
         
         return normalizedTargetPoints
-            .map {
-                point(closestTo: $0, in: normalizedSourcePoints)
+            .map { normalizedTargetPoint in
+                point(closestTo: normalizedTargetPoint, in: normalizedSourcePoints)
             }
-            .map {
-                denormalize($0, in: source)
+            .map { normalizedSourcePoint in
+                denormalize(normalizedSourcePoint, in: source)
             }
     }
     
@@ -196,16 +212,37 @@ extension LineChartView: CAAnimationDelegate {
             return target
         }
         
-        let normalizedSourcePoints = source.map { normalize($0, in: source) }
-        let normalizedTargetPoints = target.map { normalize($0, in: target) }
+        let normalizedSourcePoints = source.map { sourcePoint in
+            normalize(sourcePoint, in: source)
+        }
+        
+        let normalizedTargetPoints = target.map { targetPoint in
+            normalize(targetPoint, in: target)
+        }
         
         return normalizedSourcePoints
-            .map {
-                point(closestTo: $0, in: normalizedTargetPoints)
+            .map { normalizedSourcePoint in
+                point(closestTo: normalizedSourcePoint, in: normalizedTargetPoints)
             }
-            .map {
-                denormalize($0, in: target)
+            .map { normalizedTargetPoint in
+                denormalize(normalizedTargetPoint, in: target)
             }
+    }
+    
+    private func existingAnimationPoints(oldViewModel: LineChartViewModel) -> [LineChartDataPoint]? {
+        guard shapeLayer.animation(forKey: Constants.animationKey) != nil,
+            let visualPathRawValue = shapeLayer.presentation()?.value(forKeyPath: Constants.animationKeyPath) else {
+                return nil
+        }
+        
+        // Force unwrap since a conditional downcast from Any to CGPath always succeeds
+        let visualPath = visualPathRawValue as! CGPath
+        
+        let dataPoints = visualPath.allPoints.map { visualPoint in
+            dataPoint(from: visualPoint, with: oldViewModel)
+        }
+        
+        return dataPoints
     }
     
     private func normalize(_ point: LineChartDataPoint, in collection: [LineChartDataPoint]) -> LineChartDataPoint {
@@ -247,13 +284,46 @@ extension LineChartView: CAAnimationDelegate {
     }
 }
 
+extension CGPath {
+    
+    var allPoints: [CGPoint] {
+        var points = [CGPoint]()
+        
+        forEach { pathElement in
+            points.append(pathElement.points.pointee)
+        }
+        
+        return points
+    }
+    
+    private func forEach(_ block: @escaping (CGPathElement) -> Void) {
+        var info = block
+        apply(info: &info) { (infoPointer, elementPointer) in
+            let opaqueInfoPointer = OpaquePointer(infoPointer!)
+            let body = UnsafeMutablePointer<(CGPathElement) -> Void>(opaqueInfoPointer).pointee
+            body(elementPointer.pointee)
+        }
+    }
+}
+
 // MARK: - Constants
 
 extension LineChartView {
     
     struct Constants {
+        
         static let animationKey: String = "lineChartPath"
         static let animationKeyPath: String = "path"
-        static var animationDuration: TimeInterval = 0.3
+        static let minAnimationDuration: TimeInterval = 0.3
+        static let maxAnimationDuration: TimeInterval = 5
+        static var currentAnimationDuration: TimeInterval = 3
+        
+        static var animationDurationPercentage: Float {
+            return Float((currentAnimationDuration - minAnimationDuration) / (maxAnimationDuration - minAnimationDuration))
+        }
+        
+        static func animationDuration(withPercentage percentage: Float) -> TimeInterval {
+            return minAnimationDuration + TimeInterval(percentage) * (maxAnimationDuration - minAnimationDuration)
+        }
     }
 }

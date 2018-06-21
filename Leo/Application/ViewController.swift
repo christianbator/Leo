@@ -14,10 +14,12 @@ class ViewController: UIViewController {
     @IBOutlet var segmentSelectorView: UIStackView!
     @IBOutlet var oneDayLabel: UILabel!
     @IBOutlet var threeMonthLabel: UILabel!
+    @IBOutlet var allTimeLabel: UILabel!
     
     private var lineChartView: LineChartView!
     private var firstDataSet: LineChartDataSet!
     private var secondDataSet: LineChartDataSet!
+    private var thirdDataSet: LineChartDataSet!
     
     private var finishedInitialLayout = false
     
@@ -25,7 +27,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         view.backgroundColor = Style.backgroundColor
-        slider.value = Float(LineChartView.Constants.animationDuration)
+        slider.value = LineChartView.Constants.animationDurationPercentage
         
         oneDayLabel.layer.cornerRadius = 8
         oneDayLabel.layer.masksToBounds = true
@@ -34,6 +36,10 @@ class ViewController: UIViewController {
         threeMonthLabel.layer.cornerRadius = 8
         threeMonthLabel.layer.masksToBounds = true
         threeMonthLabel.textColor = Style.textColor.withAlphaComponent(0.6)
+        
+        allTimeLabel.layer.cornerRadius = 8
+        allTimeLabel.layer.masksToBounds = true
+        allTimeLabel.textColor = Style.textColor.withAlphaComponent(0.6)
         
         updateTintColor(Style.nonNegativeColor)
         
@@ -46,13 +52,19 @@ class ViewController: UIViewController {
         firstDataSet = LineChartDataSetProvider.dataSet(
             startingAt: CGPoint(x: 0, y: 41),
             endingAt: CGPoint(x: 67, y: 17),
-            numberOfPoints: 90
+            numberOfPoints: 60
         )
         
         secondDataSet = LineChartDataSetProvider.dataSet(
             startingAt: CGPoint(x: 0, y: 32),
             endingAt: CGPoint(x: 100, y: 68),
-            numberOfPoints: 55
+            numberOfPoints: 90
+        )
+        
+        thirdDataSet = LineChartDataSetProvider.dataSet(
+            startingAt: CGPoint(x: 0, y: 36),
+            endingAt: CGPoint(x: 80, y: 30),
+            numberOfPoints: 30
         )
     }
     
@@ -112,29 +124,43 @@ extension ViewController {
         
         let threeMonthTap = UITapGestureRecognizer(target: self, action: #selector(threeMonthTapped))
         threeMonthLabel.addGestureRecognizer(threeMonthTap)
+        
+        let allTimeTap = UITapGestureRecognizer(target: self, action: #selector(allTimeTapped))
+        allTimeLabel.addGestureRecognizer(allTimeTap)
     }
     
     @objc private func oneDayTapped() {
         oneDayLabel.textColor = Style.textColor
-        threeMonthLabel.textColor = Style.textColor.withAlphaComponent(0.6)
+        threeMonthLabel.textColor = Style.secondaryTextColor
+        allTimeLabel.textColor = Style.secondaryTextColor
         
         lineChartView.configure(with: viewModel(from: firstDataSet))
     }
     
     @objc private func threeMonthTapped() {
+        oneDayLabel.textColor = Style.secondaryTextColor
         threeMonthLabel.textColor = Style.textColor
-        oneDayLabel.textColor = Style.textColor.withAlphaComponent(0.6)
+        allTimeLabel.textColor = Style.secondaryTextColor
         
         lineChartView.configure(with: viewModel(from: secondDataSet))
+    }
+    
+    @objc private func allTimeTapped() {
+        oneDayLabel.textColor = Style.secondaryTextColor
+        threeMonthLabel.textColor = Style.secondaryTextColor
+        allTimeLabel.textColor = Style.textColor
+        
+        lineChartView.configure(with: viewModel(from: thirdDataSet))
     }
     
     private func updateTintColor(_ tintColor: UIColor) {
         oneDayLabel.layer.backgroundColor = tintColor.cgColor
         threeMonthLabel.layer.backgroundColor = tintColor.cgColor
+        allTimeLabel.layer.backgroundColor = tintColor.cgColor
         slider.tintColor = tintColor
     }
     
     @IBAction func sliderValueChanged() {
-        LineChartView.Constants.animationDuration = TimeInterval(slider.value)
+        LineChartView.Constants.currentAnimationDuration = LineChartView.Constants.animationDuration(withPercentage: slider.value)
     }
 }
