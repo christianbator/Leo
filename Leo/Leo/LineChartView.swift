@@ -12,21 +12,39 @@ import UIKit
 
 public class LineChartView: UIView {
     
-    private let shapeLayer: CAShapeLayer
-    private let animationTimingFunction: CAMediaTimingFunction
-    private var currentViewModel: LineChartViewModel?
+    // MARK: - Public
     
-    public init(animationTimingFunction: CAMediaTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut),
-                translatesAutoresizingMaskIntoConstraints: Bool = false) {
+    let insets: UIEdgeInsets
+    let animationDuration: TimeInterval
+    let animationTimingFunction: CAMediaTimingFunction
+    private(set) var currentViewModel: LineChartViewModel?
+    
+    // MARK: - Private
+    
+    private let shapeLayer: CAShapeLayer
+    
+    // MARK: - Initialization
+    
+    public init(insets: UIEdgeInsets = .zero,
+                animationDuration: TimeInterval = defaultAnimationDuration,
+                animationTimingFunction: CAMediaTimingFunction = defaultAnimationTimingFunction) {
         
-        self.shapeLayer = CAShapeLayer()
-        self.shapeLayer.fillColor = UIColor.clear.cgColor
+        self.insets = insets
+        self.animationDuration = animationDuration
         self.animationTimingFunction = animationTimingFunction
         
+        shapeLayer = CAShapeLayer()
+        shapeLayer.fillColor = UIColor.clear.cgColor
+        shapeLayer.lineCap = kCALineCapRound
+        shapeLayer.lineJoin = kCALineCapRound
+
         super.init(frame: .zero)
         
-        self.layer.addSublayer(shapeLayer)
-        self.translatesAutoresizingMaskIntoConstraints = translatesAutoresizingMaskIntoConstraints
+        layer.addSublayer(shapeLayer)
+        translatesAutoresizingMaskIntoConstraints = false
+        
+        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        addGestureRecognizer(panGestureRecognizer)
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -34,22 +52,47 @@ public class LineChartView: UIView {
     }
 }
 
-// MARK: - Configuration
+// MARK: - Interaction
+
+extension LineChartView {
+    
+    @objc private func handlePan(_ gestureRecognizer: UIPanGestureRecognizer) {
+        switch gestureRecognizer.state {
+        case .began,
+             .changed:
+//            let locationInSelf = gestureRecognizer.location(in: self)
+            shapeLayer.strokeColor = currentViewModel?.dataSet.segments.first!.lineStyle.lineColor.withAlphaComponent(0.3).cgColor
+        case .ended,
+             .cancelled:
+            shapeLayer.strokeColor = currentViewModel?.dataSet.segments.first!.lineStyle.lineColor.cgColor
+        case .possible,
+             .failed:
+            break
+        }
+    }
+    
+    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        shapeLayer.strokeColor = currentViewModel?.dataSet.segments.first!.lineStyle.lineColor.withAlphaComponent(0.3).cgColor
+    }
+    
+    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        shapeLayer.strokeColor = currentViewModel?.dataSet.segments.first!.lineStyle.lineColor.cgColor
+    }
+}
+
+// MARK: - Public Interface
 
 extension LineChartView {
     
     public func configure(with viewModel: LineChartViewModel) {
-        shapeLayer.fillColor = UIColor.clear.cgColor
-        shapeLayer.strokeColor = viewModel.dataSets.first!.segments.first!.lineStyle.lineColor.cgColor
-        shapeLayer.lineWidth = viewModel.dataSets.first!.segments.first!.lineStyle.lineWidth
-        shapeLayer.lineCap = kCALineCapRound
-        shapeLayer.lineJoin = kCALineCapRound
+        shapeLayer.strokeColor = viewModel.dataSet.segments.first!.lineStyle.lineColor.cgColor
+        shapeLayer.lineWidth = viewModel.dataSet.segments.first!.lineStyle.lineWidth
         
         if let currentViewModel = currentViewModel {
             animate(from: currentViewModel, to: viewModel)
         } else {
             shapeLayer.path = path(
-                from: viewModel.dataSets.first!.segments.first!.dataPoints,
+                from: viewModel.dataSet.segments.first!.dataPoints,
                 with: viewModel
             )
         }
@@ -58,7 +101,7 @@ extension LineChartView {
     }
 }
 
-// MARKL: - Drawing
+// MARK: - Animation
 
 extension LineChartView {
     
@@ -123,8 +166,8 @@ extension LineChartView {
 extension LineChartView: CAAnimationDelegate {
     
     private func animate(from oldViewModel: LineChartViewModel, to newViewModel: LineChartViewModel) {
-        let oldDataPoints = oldViewModel.dataSets.first!.segments.first!.dataPoints
-        let newDataPoints = newViewModel.dataSets.first!.segments.first!.dataPoints
+        let oldDataPoints = oldViewModel.dataSet.segments.flatMap { $0.dataPoints }
+        let newDataPoints = newViewModel.dataSet.segments.flatMap { $0.dataPoints }
         
         let animationStartPath = createAnimationStartPath(
             oldDataPoints: oldDataPoints,
@@ -198,10 +241,26 @@ extension LineChartView: CAAnimationDelegate {
             normalize(targetPoint, in: target)
         }
         
-        return normalizedTargetPoints
-            .map { normalizedTargetPoint in
-                point(closestTo: normalizedTargetPoint, in: normalizedSourcePoints)
-            }
+        // Map each source point to a target point
+        // For all left over target points, interpolate between two closest source points
+        
+        var result = [LineChartDataPoint]()
+        var unmappedTargetPoints = Set(normalizedTargetPoints)
+        
+        for normalizedSourcePoint in normalizedSourcePoints {
+            let mappedTargetPoint = point(closestTo: normalizedSourcePoint, in: normalizedTargetPoints)
+            unmappedTargetPoints.remove(mappedTargetPoint)
+            result.append(normalizedSourcePoint)
+        }
+        
+        for unmappedTargetPoint in unmappedTargetPoints {
+            let surroundingPoints = points(surrounding: unmappedTargetPoint, in: normalizedSourcePoints)
+            let interpolatedSourcePoint = interpolate(normalized: unmappedTargetPoint, between: surroundingPoints.left, and: surroundingPoints.right)
+            result.append(interpolatedSourcePoint)
+        }
+        
+        return result
+            .sorted { $0.x < $1.x }
             .map { normalizedSourcePoint in
                 denormalize(normalizedSourcePoint, in: source)
             }
@@ -220,10 +279,24 @@ extension LineChartView: CAAnimationDelegate {
             normalize(targetPoint, in: target)
         }
         
-        return normalizedSourcePoints
-            .map { normalizedSourcePoint in
-                point(closestTo: normalizedSourcePoint, in: normalizedTargetPoints)
-            }
+        // For each target point, find closest in source to map
+        // For unmapped source points, map to closest target point
+        
+        var result = normalizedTargetPoints
+        var unmappedSourcePoints = Set(normalizedSourcePoints)
+        
+        for normalizedTargetPoint in normalizedTargetPoints {
+            let mappedSourcePoint = point(closestTo: normalizedTargetPoint, in: normalizedSourcePoints)
+            unmappedSourcePoints.remove(mappedSourcePoint)
+        }
+        
+        for unmappedSourcePoint in unmappedSourcePoints {
+            let closestTargetPoint = point(closestTo: unmappedSourcePoint, in: normalizedTargetPoints)
+            result.append(closestTargetPoint)
+        }
+        
+        return result
+            .sorted { $0.x < $1.x }
             .map { normalizedTargetPoint in
                 denormalize(normalizedTargetPoint, in: target)
             }
@@ -275,6 +348,17 @@ extension LineChartView: CAAnimationDelegate {
         return (left: left, right: right)
     }
     
+    private func interpolate(normalized point: LineChartDataPoint, between left: LineChartDataPoint, and right: LineChartDataPoint) -> LineChartDataPoint {
+        let xRange = right.x - left.x
+        let yRange = right.y - left.y
+        let percentage = (point.x - left.x) / xRange
+        
+        let interpolatedX = left.x + percentage * xRange
+        let interpolatedY = left.y + percentage * yRange
+        
+        return LineChartDataPoint(x: interpolatedX, y: interpolatedY)
+    }
+    
     public func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         guard flag else {
             return
@@ -284,36 +368,21 @@ extension LineChartView: CAAnimationDelegate {
     }
 }
 
-extension CGPath {
-    
-    var allPoints: [CGPoint] {
-        var points = [CGPoint]()
-        
-        forEach { pathElement in
-            points.append(pathElement.points.pointee)
-        }
-        
-        return points
-    }
-    
-    private func forEach(_ block: @escaping (CGPathElement) -> Void) {
-        var info = block
-        apply(info: &info) { (infoPointer, elementPointer) in
-            let opaqueInfoPointer = OpaquePointer(infoPointer!)
-            let body = UnsafeMutablePointer<(CGPathElement) -> Void>(opaqueInfoPointer).pointee
-            body(elementPointer.pointee)
-        }
-    }
-}
+// MARK: - Defaults
 
-// MARK: - Constants
+extension LineChartView {
+    public static let defaultAnimationDuration: TimeInterval = 0.3
+    public static let defaultAnimationTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
+}
 
 extension LineChartView {
     
     struct Constants {
+        static let animationKey = "lineChartPath"
+        static let animationKeyPath = "path"
         
-        static let animationKey: String = "lineChartPath"
-        static let animationKeyPath: String = "path"
+        // MARK: - Test
+        
         static let minAnimationDuration: TimeInterval = 0.3
         static let maxAnimationDuration: TimeInterval = 5
         static var currentAnimationDuration: TimeInterval = 3

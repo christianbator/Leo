@@ -11,6 +11,9 @@ import CoreGraphics
 extension CGPoint: Hashable {
     
     public var hashValue: Int {
-        return (x.hashValue << MemoryLayout<CGFloat>.size) ^ y.hashValue
+        let shiftAmount = MemoryLayout<Int>.size * 8 / 2
+        let choppedX = x.hashValue >> shiftAmount
+        let choppedY = y.hashValue >> shiftAmount
+        return (choppedX << shiftAmount) | choppedY
     }
 }

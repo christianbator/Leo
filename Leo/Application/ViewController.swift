@@ -95,7 +95,7 @@ extension ViewController {
             maxX: 100,
             minY: 0,
             maxY: 100,
-            dataSets: [dataSet]
+            dataSet: dataSet
         )
         
         return viewModel

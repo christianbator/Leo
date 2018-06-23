@@ -25,3 +25,10 @@ extension LineChartDataPoint: CGPointConvertible {
         return CGPoint(x: x, y: y)
     }
 }
+
+extension LineChartDataPoint: Hashable {
+    
+    public var hashValue: Int {
+        return cgPointValue.hashValue
+    }
+}

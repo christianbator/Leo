@@ -9,13 +9,13 @@
 import Foundation
 
 extension Array {
-    
+
     public subscript(safe index: Int) -> Element? {
         get {
             guard index >= startIndex && index < endIndex else {
                 return nil
             }
-            
+
             return self[index]
         }
     }
