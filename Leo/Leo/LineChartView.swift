@@ -22,6 +22,7 @@ public class LineChartView: UIView {
     // MARK: - Private
     
     private let shapeLayer: CAShapeLayer
+    private var selectedShapeLayer: CAShapeLayer?
     
     // MARK: - Initialization
     
@@ -33,50 +34,16 @@ public class LineChartView: UIView {
         self.animationDuration = animationDuration
         self.animationTimingFunction = animationTimingFunction
         
-        shapeLayer = CAShapeLayer()
-        shapeLayer.fillColor = UIColor.clear.cgColor
-        shapeLayer.lineCap = kCALineCapRound
-        shapeLayer.lineJoin = kCALineCapRound
+        shapeLayer = CAShapeLayer.createLineChartLayer()
 
         super.init(frame: .zero)
         
         layer.addSublayer(shapeLayer)
         translatesAutoresizingMaskIntoConstraints = false
-        
-        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
-        addGestureRecognizer(panGestureRecognizer)
     }
     
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-}
-
-// MARK: - Interaction
-
-extension LineChartView {
-    
-    @objc private func handlePan(_ gestureRecognizer: UIPanGestureRecognizer) {
-        switch gestureRecognizer.state {
-        case .began,
-             .changed:
-//            let locationInSelf = gestureRecognizer.location(in: self)
-            shapeLayer.strokeColor = currentViewModel?.dataSet.segments.first!.lineStyle.lineColor.withAlphaComponent(0.3).cgColor
-        case .ended,
-             .cancelled:
-            shapeLayer.strokeColor = currentViewModel?.dataSet.segments.first!.lineStyle.lineColor.cgColor
-        case .possible,
-             .failed:
-            break
-        }
-    }
-    
-    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        shapeLayer.strokeColor = currentViewModel?.dataSet.segments.first!.lineStyle.lineColor.withAlphaComponent(0.3).cgColor
-    }
-    
-    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        shapeLayer.strokeColor = currentViewModel?.dataSet.segments.first!.lineStyle.lineColor.cgColor
     }
 }
 
@@ -91,8 +58,8 @@ extension LineChartView {
         if let currentViewModel = currentViewModel {
             animate(from: currentViewModel, to: viewModel)
         } else {
-            shapeLayer.path = path(
-                from: viewModel.dataSet.segments.first!.dataPoints,
+            shapeLayer.path = compoundPath(
+                from: viewModel.dataSet.segments,
                 with: viewModel
             )
         }
@@ -101,11 +68,25 @@ extension LineChartView {
     }
 }
 
-// MARK: - Animation
+// MARK: - Path Creation
 
 extension LineChartView {
     
-    private func path(from points: [LineChartDataPoint], with viewModel: LineChartViewModel) -> CGPath {
+    private func compoundPath(from segments: [LineChartDataSegment], with viewModel: LineChartViewModel) -> CGPath {
+        let compoundPath = UIBezierPath()
+        
+        let paths = segments.map { segment in
+            path(from: segment.dataPoints, with: viewModel)
+        }
+
+        for path in paths {
+            compoundPath.append(path)
+        }
+            
+        return compoundPath.cgPath
+    }
+    
+    private func path(from points: [LineChartDataPoint], with viewModel: LineChartViewModel) -> UIBezierPath {
         let path = UIBezierPath()
         
         let visualPoints = points.map { point in
@@ -113,7 +94,7 @@ extension LineChartView {
         }
         
         guard let firstVisualPoint = visualPoints.first else {
-            return path.cgPath
+            return path
         }
 
         path.move(to: firstVisualPoint)
@@ -121,7 +102,7 @@ extension LineChartView {
             path.addLine(to: visualPoint)
         }
 
-        return path.cgPath
+        return path
     }
     
     private func visualPoint(from dataPoint: LineChartDataPoint, with viewModel: LineChartViewModel) -> CGPoint {
@@ -163,7 +144,7 @@ extension LineChartView {
 
 // MARK: - Animation
 
-extension LineChartView: CAAnimationDelegate {
+extension LineChartView {
     
     private func animate(from oldViewModel: LineChartViewModel, to newViewModel: LineChartViewModel) {
         let oldDataPoints = oldViewModel.dataSet.segments.flatMap { $0.dataPoints }
@@ -182,29 +163,27 @@ extension LineChartView: CAAnimationDelegate {
             newViewModel: newViewModel
         )
         
-        let animation = CABasicAnimation(keyPath: Constants.animationKeyPath)
-        animation.delegate = self
-        animation.timingFunction = animationTimingFunction
-        animation.duration = Constants.currentAnimationDuration
-        animation.isRemovedOnCompletion = true
-        animation.fromValue = animationStartPath
-        animation.toValue = animationEndPath
+        shapeLayer.path = compoundPath(from: newViewModel.dataSet.segments, with: newViewModel)
         
-        shapeLayer.path = path(from: newDataPoints, with: newViewModel)
-        shapeLayer.removeAnimation(forKey: Constants.animationKey)
-        shapeLayer.add(animation, forKey: Constants.animationKey)
+        shapeLayer.add(
+            ShapeLayerPathAnimation(
+                fromValue: animationStartPath.cgPath,
+                toValue: animationEndPath.cgPath,
+                duration: Constants.currentAnimationDuration,
+                timingFunction: animationTimingFunction,
+                delegate: self
+            )
+        )
     }
     
     private func createAnimationStartPath(oldDataPoints: [LineChartDataPoint],
                                           newDataPoints: [LineChartDataPoint],
-                                          oldViewModel: LineChartViewModel) -> CGPath {
+                                          oldViewModel: LineChartViewModel) -> UIBezierPath {
         
         let animationStartPoints = createAnimationStartPoints(
             from: existingAnimationPoints(oldViewModel: oldViewModel) ?? oldDataPoints,
             target: newDataPoints
         )
-        
-        print("From: \(animationStartPoints.count)")
         
         let animationStartPath = path(from: animationStartPoints, with: oldViewModel)
         
@@ -214,14 +193,12 @@ extension LineChartView: CAAnimationDelegate {
     private func createAnimationEndPath(oldDataPoints: [LineChartDataPoint],
                                         newDataPoints: [LineChartDataPoint],
                                         oldViewModel: LineChartViewModel,
-                                        newViewModel: LineChartViewModel) -> CGPath {
+                                        newViewModel: LineChartViewModel) -> UIBezierPath {
         
         let animationEndPoints = createAnimationEndPoints(
             from: existingAnimationPoints(oldViewModel: oldViewModel) ?? oldDataPoints,
             target: newDataPoints
         )
-        
-        print("To: \(animationEndPoints.count)")
         
         let animationEndPath = path(from: animationEndPoints, with: newViewModel)
         
@@ -303,12 +280,12 @@ extension LineChartView: CAAnimationDelegate {
     }
     
     private func existingAnimationPoints(oldViewModel: LineChartViewModel) -> [LineChartDataPoint]? {
-        guard shapeLayer.animation(forKey: Constants.animationKey) != nil,
-            let visualPathRawValue = shapeLayer.presentation()?.value(forKeyPath: Constants.animationKeyPath) else {
+        guard let pathAnimation = shapeLayer.existingAnimation(ofType: ShapeLayerPathAnimation.self),
+            let visualPathRawValue = shapeLayer.presentation()?.value(forKeyPath: type(of: pathAnimation).animationKeyPath) else {
                 return nil
         }
         
-        // Force unwrap since a conditional downcast from Any to CGPath always succeeds
+        // Force cast since a conditional downcast from Any to CGPath always succeeds
         let visualPath = visualPathRawValue as! CGPath
         
         let dataPoints = visualPath.allPoints.map { visualPoint in
@@ -358,19 +335,84 @@ extension LineChartView: CAAnimationDelegate {
         
         return LineChartDataPoint(x: interpolatedX, y: interpolatedY)
     }
+}
+
+// MARK: - CAAnimationDelegate
+
+extension LineChartView: CAAnimationDelegate {
     
     public func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         guard flag else {
             return
         }
         
-        shapeLayer.removeAnimation(forKey: Constants.animationKey)
+        guard let animation = anim as? CustomBasicAnimation else {
+            return
+        }
+        
+        if let alphaAnimation = animation as? LayerAlphaAnimation, alphaAnimation.alphaValue == 1 {
+            selectedShapeLayer?.removeFromSuperlayer()
+            selectedShapeLayer = nil
+        }
+    }
+}
+
+// MARK: - Interaction
+
+extension LineChartView {
+    
+    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let currentViewModel = currentViewModel else {
+            return
+        }
+        
+        if selectedShapeLayer == nil {
+            selectedShapeLayer = CAShapeLayer.createLineChartLayer()
+            selectedShapeLayer!.strokeColor = currentViewModel.dataSet.segments.first!.lineStyle.lineColor.cgColor
+            selectedShapeLayer!.lineWidth = currentViewModel.dataSet.segments.first!.lineStyle.lineWidth
+        }
+        
+        assert(selectedShapeLayer != nil)
+        
+        selectedShapeLayer!.path = path(
+            from: Array(currentViewModel.dataSet.segments.first!.dataPoints[10..<20]),
+            with: currentViewModel
+        ).cgPath
+        
+        layer.addSublayer(selectedShapeLayer!)
+        
+        shapeLayer.add(
+            LayerAlphaAnimation(
+                toValue: 0.3,
+                duration: animationDuration,
+                timingFunction: animationTimingFunction,
+                delegate: self
+            )
+        )
+    }
+    
+    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard currentViewModel != nil else {
+            return
+        }
+        
+        assert(selectedShapeLayer != nil)
+        
+        shapeLayer.add(
+            LayerAlphaAnimation(
+                toValue: 1,
+                duration: animationDuration,
+                timingFunction: animationTimingFunction,
+                delegate: self
+            )
+        )
     }
 }
 
 // MARK: - Defaults
 
 extension LineChartView {
+    
     public static let defaultAnimationDuration: TimeInterval = 0.3
     public static let defaultAnimationTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
 }
@@ -378,8 +420,6 @@ extension LineChartView {
 extension LineChartView {
     
     struct Constants {
-        static let animationKey = "lineChartPath"
-        static let animationKeyPath = "path"
         
         // MARK: - Test
         

@@ -27,6 +27,8 @@
 		AAB7C96320B9190000D324D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAB7C96220B9190000D324D3 /* Assets.xcassets */; };
 		AAB7C96620B9190000D324D3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAB7C96420B9190000D324D3 /* LaunchScreen.storyboard */; };
 		AABEB08D20DDEFF300170B5E /* CGPath+AllPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB08C20DDEFF300170B5E /* CGPath+AllPoints.swift */; };
+		AABEB08F20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB08E20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift */; };
+		AABEB09820DE098500170B5E /* CustomAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB09720DE098500170B5E /* CustomAnimations.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +54,8 @@
 		AAB7C96520B9190000D324D3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AAB7C96720B9190000D324D3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AABEB08C20DDEFF300170B5E /* CGPath+AllPoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGPath+AllPoints.swift"; sourceTree = "<group>"; };
+		AABEB08E20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CAShapeLayer+LineChartLayer.swift"; sourceTree = "<group>"; };
+		AABEB09720DE098500170B5E /* CustomAnimations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomAnimations.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +106,7 @@
 				AA8AC65E20BA248F008C88BD /* Styling */,
 				AA8AC65F20BA2496008C88BD /* ViewModel */,
 				AA8AC66020BA24B0008C88BD /* LineChartView.swift */,
+				AABEB09720DE098500170B5E /* CustomAnimations.swift */,
 			);
 			path = Leo;
 			sourceTree = "<group>";
@@ -166,11 +171,20 @@
 			children = (
 				AA8AC64020BA20B6008C88BD /* Application */,
 				AA8AC64220BA20F6008C88BD /* Leo */,
+				AABEB09020DE03FF00170B5E /* CoreAnimation Extensions */,
 				AA8AC63F20BA20AD008C88BD /* Foundation Extensions */,
 				AA8AC65020BA2245008C88BD /* CoreGraphics Extensions */,
 				AA8AC64120BA20C3008C88BD /* Supporting Files */,
 			);
 			path = Leo;
+			sourceTree = "<group>";
+		};
+		AABEB09020DE03FF00170B5E /* CoreAnimation Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				AABEB08E20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift */,
+			);
+			path = "CoreAnimation Extensions";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -244,6 +258,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AABEB08F20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift in Sources */,
 				AA8AC64D20BA21C9008C88BD /* LineChartViewModel.swift in Sources */,
 				AA2D94D720BA73750031072E /* Style.swift in Sources */,
 				AA8AC65A20BA2310008C88BD /* LineChartDataSet.swift in Sources */,
@@ -253,6 +268,7 @@
 				AA8AC66720BA2EA8008C88BD /* Array+SafeSubscript.swift in Sources */,
 				AA8AC65820BA22DF008C88BD /* LineChartReferenceLine.swift in Sources */,
 				AA8AC65420BA22A9008C88BD /* LineChartDataSegment.swift in Sources */,
+				AABEB09820DE098500170B5E /* CustomAnimations.swift in Sources */,
 				AA8AC66320BA275A008C88BD /* LineChartDataSetProvider.swift in Sources */,
 				AA8AC63A20B91988008C88BD /* CGPoint+Hashable.swift in Sources */,
 				AA8AC64A20BA21C9008C88BD /* LineChartDataPointConvertible.swift in Sources */,
