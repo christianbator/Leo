@@ -130,7 +130,7 @@ extension LineChartView {
             return CGFloat((dataPoint.x - viewModel.minX) / viewModel.xRange)
         }()
         
-        let adjustedX = scaledX * bounds.width
+        let adjustedX = insetBounds.minX + scaledX * insetBounds.width
         
         let scaledY: CGFloat = {
             // If this is the only data point, draw it in the vertical center
@@ -141,19 +141,23 @@ extension LineChartView {
             return CGFloat((dataPoint.y - viewModel.minY) / viewModel.yRange)
         }()
         
-        let adjustedY = bounds.height - scaledY * bounds.height
+        let adjustedY = insetBounds.minY + (insetBounds.height - scaledY * insetBounds.height)
         
         return CGPoint(x: adjustedX, y: adjustedY)
     }
     
     private func dataPoint(from visualPoint: CGPoint, with viewModel: LineChartViewModel) -> LineChartDataPoint {
-        let xPercentage = visualPoint.x / bounds.width
+        let xPercentage = visualPoint.x / insetBounds.width
         let x = viewModel.minX + xPercentage * viewModel.xRange
         
-        let yPercentage = (bounds.height - visualPoint.y) / bounds.height
+        let yPercentage = (insetBounds.height - visualPoint.y) / insetBounds.height
         let y = viewModel.minY + yPercentage * viewModel.yRange
         
         return LineChartDataPoint(x: x, y: y)
+    }
+    
+    private var insetBounds: CGRect {
+        return UIEdgeInsetsInsetRect(bounds, insets)
     }
 }
 
@@ -441,7 +445,7 @@ extension LineChartView {
         
         static let minAnimationDuration: TimeInterval = 0.3
         static let maxAnimationDuration: TimeInterval = 5
-        static var currentAnimationDuration: TimeInterval = 3
+        static var currentAnimationDuration: TimeInterval = 0.3
         
         static var animationDurationPercentage: Float {
             return Float((currentAnimationDuration - minAnimationDuration) / (maxAnimationDuration - minAnimationDuration))
