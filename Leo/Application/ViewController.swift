@@ -17,9 +17,10 @@ class ViewController: UIViewController {
     @IBOutlet var allTimeLabel: UILabel!
     
     private var lineChartView: LineChartView!
-    private var firstDataSet: LineChartDataSet!
-    private var secondDataSet: LineChartDataSet!
-    private var thirdDataSet: LineChartDataSet!
+    
+    private var firstStyledDataSet: StyledLineChartDataSet!
+    private var secondStyledDataSet: StyledLineChartDataSet!
+    private var thirdStyledDataSet: StyledLineChartDataSet!
     
     private var finishedInitialLayout = false
     
@@ -49,19 +50,19 @@ class ViewController: UIViewController {
         
         setupInteraction()
         
-        firstDataSet = LineChartDataSetProvider.dataSet(
+        firstStyledDataSet = LineChartDataSetProvider.styledDataSet(
             startingAt: CGPoint(x: 0, y: 41),
             endingAt: CGPoint(x: 67, y: 17),
             numberOfPoints: 60
         )
         
-        secondDataSet = LineChartDataSetProvider.dataSet(
+        secondStyledDataSet = LineChartDataSetProvider.styledDataSet(
             startingAt: CGPoint(x: 0, y: 32),
             endingAt: CGPoint(x: 100, y: 68),
             numberOfPoints: 90
         )
         
-        thirdDataSet = LineChartDataSetProvider.dataSet(
+        thirdStyledDataSet = LineChartDataSetProvider.styledDataSet(
             startingAt: CGPoint(x: 0, y: 36),
             endingAt: CGPoint(x: 80, y: 30),
             numberOfPoints: 30
@@ -75,7 +76,7 @@ class ViewController: UIViewController {
             return
         }
         
-        lineChartView.configure(with: viewModel(from: firstDataSet))
+        lineChartView.configure(with: viewModel(from: firstStyledDataSet))
         
         finishedInitialLayout = true
     }
@@ -89,13 +90,13 @@ class ViewController: UIViewController {
 
 extension ViewController {
     
-    private func viewModel(from dataSet: LineChartDataSet) -> LineChartViewModel {
+    private func viewModel(from styledDataSet: StyledLineChartDataSet) -> LineChartViewModel {
         let viewModel = LineChartViewModel(
             minX: 0,
             maxX: 100,
             minY: 0,
             maxY: 100,
-            dataSet: dataSet
+            styledDataSet: styledDataSet
         )
         
         return viewModel
@@ -134,7 +135,7 @@ extension ViewController {
         threeMonthLabel.textColor = Style.secondaryTextColor
         allTimeLabel.textColor = Style.secondaryTextColor
         
-        lineChartView.configure(with: viewModel(from: firstDataSet))
+        lineChartView.configure(with: viewModel(from: firstStyledDataSet))
     }
     
     @objc private func threeMonthTapped() {
@@ -142,7 +143,7 @@ extension ViewController {
         threeMonthLabel.textColor = Style.textColor
         allTimeLabel.textColor = Style.secondaryTextColor
         
-        lineChartView.configure(with: viewModel(from: secondDataSet))
+        lineChartView.configure(with: viewModel(from: secondStyledDataSet))
     }
     
     @objc private func allTimeTapped() {
@@ -150,7 +151,7 @@ extension ViewController {
         threeMonthLabel.textColor = Style.secondaryTextColor
         allTimeLabel.textColor = Style.textColor
         
-        lineChartView.configure(with: viewModel(from: thirdDataSet))
+        lineChartView.configure(with: viewModel(from: thirdStyledDataSet))
     }
     
     private func updateTintColor(_ tintColor: UIColor) {

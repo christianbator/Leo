@@ -11,11 +11,9 @@ import Foundation
 public struct LineChartDataSegment: Equatable {
     
     public let dataPoints: [LineChartDataPoint]
-    public let lineStyle: LineStyle
     
-    public init(dataPoints: [LineChartDataPoint], lineStyle: LineStyle) {
+    public init(dataPoints: [LineChartDataPoint]) {
         self.dataPoints = dataPoints
-        self.lineStyle = lineStyle
     }
 }
 

@@ -11,10 +11,8 @@ import CoreGraphics
 public struct LineChartReferenceLine: Equatable {
     
     public let y: CGFloat
-    public let style: LineStyle
     
-    init(y: CGFloatConvertible, style: LineStyle) {
-        self.y = y.cgFloatValue
-        self.style = style
+    init(y: CGFloat) {
+        self.y = y
     }
 }

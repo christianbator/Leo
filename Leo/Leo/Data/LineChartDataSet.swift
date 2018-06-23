@@ -11,6 +11,12 @@ import Foundation
 public struct LineChartDataSet: Equatable {
     
     public let segments: [LineChartDataSegment]
+    public let referenceLine: LineChartReferenceLine?
+    
+    public init(segments: [LineChartDataSegment], referenceLine: LineChartReferenceLine? = nil) {
+        self.segments = segments
+        self.referenceLine = referenceLine
+    }
 }
 
 // MARK: - Computed Properties

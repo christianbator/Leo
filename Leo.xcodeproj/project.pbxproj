@@ -9,18 +9,20 @@
 /* Begin PBXBuildFile section */
 		AA2D94D720BA73750031072E /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2D94D620BA73750031072E /* Style.swift */; };
 		AA8AC63A20B91988008C88BD /* CGPoint+Hashable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC63920B91988008C88BD /* CGPoint+Hashable.swift */; };
-		AA8AC64A20BA21C9008C88BD /* LineChartDataPointConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC64620BA21C9008C88BD /* LineChartDataPointConvertible.swift */; };
 		AA8AC64D20BA21C9008C88BD /* LineChartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC64920BA21C9008C88BD /* LineChartViewModel.swift */; };
 		AA8AC65220BA228D008C88BD /* LineChartDataPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC65120BA228D008C88BD /* LineChartDataPoint.swift */; };
 		AA8AC65420BA22A9008C88BD /* LineChartDataSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC65320BA22A9008C88BD /* LineChartDataSegment.swift */; };
 		AA8AC65620BA22C4008C88BD /* LineStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC65520BA22C4008C88BD /* LineStyle.swift */; };
 		AA8AC65820BA22DF008C88BD /* LineChartReferenceLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC65720BA22DF008C88BD /* LineChartReferenceLine.swift */; };
 		AA8AC65A20BA2310008C88BD /* LineChartDataSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC65920BA2310008C88BD /* LineChartDataSet.swift */; };
-		AA8AC65C20BA235E008C88BD /* CGPointConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC65B20BA235E008C88BD /* CGPointConvertible.swift */; };
 		AA8AC66120BA24B0008C88BD /* LineChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC66020BA24B0008C88BD /* LineChartView.swift */; };
 		AA8AC66320BA275A008C88BD /* LineChartDataSetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC66220BA275A008C88BD /* LineChartDataSetProvider.swift */; };
 		AA8AC66720BA2EA8008C88BD /* Array+SafeSubscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC66620BA2EA8008C88BD /* Array+SafeSubscript.swift */; };
-		AA8AC66920BA2FA9008C88BD /* CGFloatConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8AC66820BA2FA9008C88BD /* CGFloatConvertible.swift */; };
+		AA8EA9F120DEFF340086E3DD /* CALayer+CustomBasicAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EA9F020DEFF340086E3DD /* CALayer+CustomBasicAnimation.swift */; };
+		AA8EA9F420DEFF530086E3DD /* LayerAlphaAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EA9F320DEFF530086E3DD /* LayerAlphaAnimation.swift */; };
+		AA8EA9F620DEFF700086E3DD /* ShapeLayerPathAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EA9F520DEFF700086E3DD /* ShapeLayerPathAnimation.swift */; };
+		AA8EA9F920DF00A10086E3DD /* StyledLineChartDataSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EA9F820DF00A10086E3DD /* StyledLineChartDataSet.swift */; };
+		AA8EA9FB20DF00A90086E3DD /* StyledReferenceLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EA9FA20DF00A90086E3DD /* StyledReferenceLine.swift */; };
 		AAB7C95C20B918FF00D324D3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB7C95B20B918FF00D324D3 /* AppDelegate.swift */; };
 		AAB7C95E20B918FF00D324D3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB7C95D20B918FF00D324D3 /* ViewController.swift */; };
 		AAB7C96120B918FF00D324D3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAB7C95F20B918FF00D324D3 /* Main.storyboard */; };
@@ -28,24 +30,26 @@
 		AAB7C96620B9190000D324D3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAB7C96420B9190000D324D3 /* LaunchScreen.storyboard */; };
 		AABEB08D20DDEFF300170B5E /* CGPath+AllPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB08C20DDEFF300170B5E /* CGPath+AllPoints.swift */; };
 		AABEB08F20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB08E20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift */; };
-		AABEB09820DE098500170B5E /* CustomAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB09720DE098500170B5E /* CustomAnimations.swift */; };
+		AABEB09820DE098500170B5E /* CustomBasicAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB09720DE098500170B5E /* CustomBasicAnimation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		AA2D94D620BA73750031072E /* Style.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Style.swift; sourceTree = "<group>"; };
 		AA8AC63920B91988008C88BD /* CGPoint+Hashable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGPoint+Hashable.swift"; sourceTree = "<group>"; };
-		AA8AC64620BA21C9008C88BD /* LineChartDataPointConvertible.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineChartDataPointConvertible.swift; sourceTree = "<group>"; };
 		AA8AC64920BA21C9008C88BD /* LineChartViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineChartViewModel.swift; sourceTree = "<group>"; };
 		AA8AC65120BA228D008C88BD /* LineChartDataPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineChartDataPoint.swift; sourceTree = "<group>"; };
 		AA8AC65320BA22A9008C88BD /* LineChartDataSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineChartDataSegment.swift; sourceTree = "<group>"; };
 		AA8AC65520BA22C4008C88BD /* LineStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineStyle.swift; sourceTree = "<group>"; };
 		AA8AC65720BA22DF008C88BD /* LineChartReferenceLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineChartReferenceLine.swift; sourceTree = "<group>"; };
 		AA8AC65920BA2310008C88BD /* LineChartDataSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineChartDataSet.swift; sourceTree = "<group>"; };
-		AA8AC65B20BA235E008C88BD /* CGPointConvertible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGPointConvertible.swift; sourceTree = "<group>"; };
 		AA8AC66020BA24B0008C88BD /* LineChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineChartView.swift; sourceTree = "<group>"; };
 		AA8AC66220BA275A008C88BD /* LineChartDataSetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineChartDataSetProvider.swift; sourceTree = "<group>"; };
 		AA8AC66620BA2EA8008C88BD /* Array+SafeSubscript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+SafeSubscript.swift"; sourceTree = "<group>"; };
-		AA8AC66820BA2FA9008C88BD /* CGFloatConvertible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGFloatConvertible.swift; sourceTree = "<group>"; };
+		AA8EA9F020DEFF340086E3DD /* CALayer+CustomBasicAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CALayer+CustomBasicAnimation.swift"; sourceTree = "<group>"; };
+		AA8EA9F320DEFF530086E3DD /* LayerAlphaAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerAlphaAnimation.swift; sourceTree = "<group>"; };
+		AA8EA9F520DEFF700086E3DD /* ShapeLayerPathAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeLayerPathAnimation.swift; sourceTree = "<group>"; };
+		AA8EA9F820DF00A10086E3DD /* StyledLineChartDataSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledLineChartDataSet.swift; sourceTree = "<group>"; };
+		AA8EA9FA20DF00A90086E3DD /* StyledReferenceLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledReferenceLine.swift; sourceTree = "<group>"; };
 		AAB7C95820B918FF00D324D3 /* Leo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Leo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAB7C95B20B918FF00D324D3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AAB7C95D20B918FF00D324D3 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -55,7 +59,7 @@
 		AAB7C96720B9190000D324D3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AABEB08C20DDEFF300170B5E /* CGPath+AllPoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGPath+AllPoints.swift"; sourceTree = "<group>"; };
 		AABEB08E20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CAShapeLayer+LineChartLayer.swift"; sourceTree = "<group>"; };
-		AABEB09720DE098500170B5E /* CustomAnimations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomAnimations.swift; sourceTree = "<group>"; };
+		AABEB09720DE098500170B5E /* CustomBasicAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBasicAnimation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,11 +106,14 @@
 		AA8AC64220BA20F6008C88BD /* Leo */ = {
 			isa = PBXGroup;
 			children = (
-				AA8AC65D20BA2484008C88BD /* DataSet */,
+				AA8AC65D20BA2484008C88BD /* Data */,
 				AA8AC65E20BA248F008C88BD /* Styling */,
-				AA8AC65F20BA2496008C88BD /* ViewModel */,
-				AA8AC66020BA24B0008C88BD /* LineChartView.swift */,
-				AABEB09720DE098500170B5E /* CustomAnimations.swift */,
+				AA8AC65F20BA2496008C88BD /* LineChartViewModel */,
+				AA8EA9F720DEFF880086E3DD /* LineChartView */,
+				AA8EA9F220DEFF440086E3DD /* Animations */,
+				AABEB09020DE03FF00170B5E /* CoreAnimation Extensions */,
+				AA8AC63F20BA20AD008C88BD /* Foundation Extensions */,
+				AA8AC65020BA2245008C88BD /* CoreGraphics Extensions */,
 			);
 			path = Leo;
 			sourceTree = "<group>";
@@ -115,39 +122,56 @@
 			isa = PBXGroup;
 			children = (
 				AA8AC63920B91988008C88BD /* CGPoint+Hashable.swift */,
-				AA8AC66820BA2FA9008C88BD /* CGFloatConvertible.swift */,
-				AA8AC65B20BA235E008C88BD /* CGPointConvertible.swift */,
 				AABEB08C20DDEFF300170B5E /* CGPath+AllPoints.swift */,
 			);
 			path = "CoreGraphics Extensions";
 			sourceTree = "<group>";
 		};
-		AA8AC65D20BA2484008C88BD /* DataSet */ = {
+		AA8AC65D20BA2484008C88BD /* Data */ = {
 			isa = PBXGroup;
 			children = (
 				AA8AC65120BA228D008C88BD /* LineChartDataPoint.swift */,
-				AA8AC64620BA21C9008C88BD /* LineChartDataPointConvertible.swift */,
 				AA8AC65320BA22A9008C88BD /* LineChartDataSegment.swift */,
 				AA8AC65920BA2310008C88BD /* LineChartDataSet.swift */,
 				AA8AC65720BA22DF008C88BD /* LineChartReferenceLine.swift */,
 			);
-			path = DataSet;
+			path = Data;
 			sourceTree = "<group>";
 		};
 		AA8AC65E20BA248F008C88BD /* Styling */ = {
 			isa = PBXGroup;
 			children = (
 				AA8AC65520BA22C4008C88BD /* LineStyle.swift */,
+				AA8EA9F820DF00A10086E3DD /* StyledLineChartDataSet.swift */,
+				AA8EA9FA20DF00A90086E3DD /* StyledReferenceLine.swift */,
 			);
 			path = Styling;
 			sourceTree = "<group>";
 		};
-		AA8AC65F20BA2496008C88BD /* ViewModel */ = {
+		AA8AC65F20BA2496008C88BD /* LineChartViewModel */ = {
 			isa = PBXGroup;
 			children = (
 				AA8AC64920BA21C9008C88BD /* LineChartViewModel.swift */,
 			);
-			path = ViewModel;
+			path = LineChartViewModel;
+			sourceTree = "<group>";
+		};
+		AA8EA9F220DEFF440086E3DD /* Animations */ = {
+			isa = PBXGroup;
+			children = (
+				AABEB09720DE098500170B5E /* CustomBasicAnimation.swift */,
+				AA8EA9F320DEFF530086E3DD /* LayerAlphaAnimation.swift */,
+				AA8EA9F520DEFF700086E3DD /* ShapeLayerPathAnimation.swift */,
+			);
+			path = Animations;
+			sourceTree = "<group>";
+		};
+		AA8EA9F720DEFF880086E3DD /* LineChartView */ = {
+			isa = PBXGroup;
+			children = (
+				AA8AC66020BA24B0008C88BD /* LineChartView.swift */,
+			);
+			path = LineChartView;
 			sourceTree = "<group>";
 		};
 		AAB7C94F20B918FF00D324D3 = {
@@ -171,9 +195,6 @@
 			children = (
 				AA8AC64020BA20B6008C88BD /* Application */,
 				AA8AC64220BA20F6008C88BD /* Leo */,
-				AABEB09020DE03FF00170B5E /* CoreAnimation Extensions */,
-				AA8AC63F20BA20AD008C88BD /* Foundation Extensions */,
-				AA8AC65020BA2245008C88BD /* CoreGraphics Extensions */,
 				AA8AC64120BA20C3008C88BD /* Supporting Files */,
 			);
 			path = Leo;
@@ -183,6 +204,7 @@
 			isa = PBXGroup;
 			children = (
 				AABEB08E20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift */,
+				AA8EA9F020DEFF340086E3DD /* CALayer+CustomBasicAnimation.swift */,
 			);
 			path = "CoreAnimation Extensions";
 			sourceTree = "<group>";
@@ -258,25 +280,27 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA8EA9FB20DF00A90086E3DD /* StyledReferenceLine.swift in Sources */,
 				AABEB08F20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift in Sources */,
 				AA8AC64D20BA21C9008C88BD /* LineChartViewModel.swift in Sources */,
+				AA8EA9F420DEFF530086E3DD /* LayerAlphaAnimation.swift in Sources */,
 				AA2D94D720BA73750031072E /* Style.swift in Sources */,
 				AA8AC65A20BA2310008C88BD /* LineChartDataSet.swift in Sources */,
 				AAB7C95E20B918FF00D324D3 /* ViewController.swift in Sources */,
 				AA8AC66120BA24B0008C88BD /* LineChartView.swift in Sources */,
+				AA8EA9F920DF00A10086E3DD /* StyledLineChartDataSet.swift in Sources */,
 				AA8AC65620BA22C4008C88BD /* LineStyle.swift in Sources */,
 				AA8AC66720BA2EA8008C88BD /* Array+SafeSubscript.swift in Sources */,
 				AA8AC65820BA22DF008C88BD /* LineChartReferenceLine.swift in Sources */,
 				AA8AC65420BA22A9008C88BD /* LineChartDataSegment.swift in Sources */,
-				AABEB09820DE098500170B5E /* CustomAnimations.swift in Sources */,
+				AABEB09820DE098500170B5E /* CustomBasicAnimation.swift in Sources */,
 				AA8AC66320BA275A008C88BD /* LineChartDataSetProvider.swift in Sources */,
 				AA8AC63A20B91988008C88BD /* CGPoint+Hashable.swift in Sources */,
-				AA8AC64A20BA21C9008C88BD /* LineChartDataPointConvertible.swift in Sources */,
+				AA8EA9F120DEFF340086E3DD /* CALayer+CustomBasicAnimation.swift in Sources */,
 				AAB7C95C20B918FF00D324D3 /* AppDelegate.swift in Sources */,
 				AABEB08D20DDEFF300170B5E /* CGPath+AllPoints.swift in Sources */,
 				AA8AC65220BA228D008C88BD /* LineChartDataPoint.swift in Sources */,
-				AA8AC66920BA2FA9008C88BD /* CGFloatConvertible.swift in Sources */,
-				AA8AC65C20BA235E008C88BD /* CGPointConvertible.swift in Sources */,
+				AA8EA9F620DEFF700086E3DD /* ShapeLayerPathAnimation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

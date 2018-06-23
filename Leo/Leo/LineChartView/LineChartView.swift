@@ -8,8 +8,6 @@
 
 import UIKit
 
-// TODO: - Support Multiple Lines Per ViewModel, Handle Insets
-
 public class LineChartView: UIView {
     
     // MARK: - Public
@@ -40,6 +38,9 @@ public class LineChartView: UIView {
         
         layer.addSublayer(shapeLayer)
         translatesAutoresizingMaskIntoConstraints = false
+        
+        layer.borderColor = Style.negativeColor.cgColor
+        layer.borderWidth = 2
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -52,19 +53,28 @@ public class LineChartView: UIView {
 extension LineChartView {
     
     public func configure(with viewModel: LineChartViewModel) {
-        shapeLayer.strokeColor = viewModel.dataSet.segments.first!.lineStyle.lineColor.cgColor
-        shapeLayer.lineWidth = viewModel.dataSet.segments.first!.lineStyle.lineWidth
+        style(with: viewModel)
         
         if let currentViewModel = currentViewModel {
             animate(from: currentViewModel, to: viewModel)
         } else {
             shapeLayer.path = compoundPath(
-                from: viewModel.dataSet.segments,
+                from: viewModel.segments,
                 with: viewModel
             )
         }
         
         currentViewModel = viewModel
+    }
+}
+
+// MARK: - Styling
+
+extension LineChartView {
+    
+    private func style(with viewModel: LineChartViewModel) {
+        shapeLayer.strokeColor = viewModel.styledDataSet.lineStyle.lineColor.cgColor
+        shapeLayer.lineWidth = viewModel.styledDataSet.lineStyle.lineWidth
     }
 }
 
@@ -104,6 +114,11 @@ extension LineChartView {
 
         return path
     }
+}
+
+// MARK: - Point Transformation
+
+extension LineChartView {
     
     private func visualPoint(from dataPoint: LineChartDataPoint, with viewModel: LineChartViewModel) -> CGPoint {
         let scaledX: CGFloat = {
@@ -147,8 +162,8 @@ extension LineChartView {
 extension LineChartView {
     
     private func animate(from oldViewModel: LineChartViewModel, to newViewModel: LineChartViewModel) {
-        let oldDataPoints = oldViewModel.dataSet.segments.flatMap { $0.dataPoints }
-        let newDataPoints = newViewModel.dataSet.segments.flatMap { $0.dataPoints }
+        let oldDataPoints = oldViewModel.allDataPoints
+        let newDataPoints = newViewModel.allDataPoints
         
         let animationStartPath = createAnimationStartPath(
             oldDataPoints: oldDataPoints,
@@ -163,7 +178,7 @@ extension LineChartView {
             newViewModel: newViewModel
         )
         
-        shapeLayer.path = compoundPath(from: newViewModel.dataSet.segments, with: newViewModel)
+        shapeLayer.path = compoundPath(from: newViewModel.segments, with: newViewModel)
         
         shapeLayer.add(
             ShapeLayerPathAnimation(
@@ -366,20 +381,19 @@ extension LineChartView {
             return
         }
         
-        if selectedShapeLayer == nil {
-            selectedShapeLayer = CAShapeLayer.createLineChartLayer()
-            selectedShapeLayer!.strokeColor = currentViewModel.dataSet.segments.first!.lineStyle.lineColor.cgColor
-            selectedShapeLayer!.lineWidth = currentViewModel.dataSet.segments.first!.lineStyle.lineWidth
-        }
+        assert(self.selectedShapeLayer == nil)
         
-        assert(selectedShapeLayer != nil)
+        let selectedShapeLayer = CAShapeLayer.createLineChartLayer()
         
-        selectedShapeLayer!.path = path(
-            from: Array(currentViewModel.dataSet.segments.first!.dataPoints[10..<20]),
+        selectedShapeLayer.strokeColor = currentViewModel.styledDataSet.lineStyle.lineColor.cgColor
+        selectedShapeLayer.lineWidth = currentViewModel.styledDataSet.lineStyle.lineWidth
+        
+        selectedShapeLayer.path = path(
+            from: Array(currentViewModel.allDataPoints[10..<20]),
             with: currentViewModel
         ).cgPath
         
-        layer.addSublayer(selectedShapeLayer!)
+        layer.addSublayer(selectedShapeLayer)
         
         shapeLayer.add(
             LayerAlphaAnimation(
@@ -389,6 +403,8 @@ extension LineChartView {
                 delegate: self
             )
         )
+        
+        self.selectedShapeLayer = selectedShapeLayer
     }
     
     override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {

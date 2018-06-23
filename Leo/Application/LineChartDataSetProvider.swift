@@ -10,10 +10,10 @@ import UIKit
 
 class LineChartDataSetProvider {
     
-    static func dataSet(startingAt start: CGPoint,
-                        endingAt end: CGPoint,
-                        numberOfPoints: Int,
-                        lineColor: UIColor = Style.nonNegativeColor) -> LineChartDataSet {
+    static func styledDataSet(startingAt start: CGPoint,
+                              endingAt end: CGPoint,
+                              numberOfPoints: Int,
+                              lineColor: UIColor = Style.nonNegativeColor) -> StyledLineChartDataSet {
         
         let lineStyle = LineStyle(lineWidth: 2, lineColor: lineColor)
         
@@ -24,15 +24,17 @@ class LineChartDataSetProvider {
         )
         
         let segment = LineChartDataSegment(
-            dataPoints: dataPoints,
-            lineStyle: lineStyle
+            dataPoints: dataPoints
         )
         
         let dataSet = LineChartDataSet(
             segments: [segment]
         )
         
-        return dataSet
+        return StyledLineChartDataSet(
+            dataSet: dataSet,
+            lineStyle: lineStyle
+        )
     }
 }
 
