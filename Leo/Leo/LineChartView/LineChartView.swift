@@ -58,10 +58,7 @@ extension LineChartView {
         if let currentViewModel = currentViewModel {
             animate(from: currentViewModel, to: viewModel)
         } else {
-            shapeLayer.path = compoundPath(
-                from: viewModel.segments,
-                with: viewModel
-            )
+            shapeLayer.path = compoundPath(from: viewModel.segments, with: viewModel).cgPath
         }
         
         currentViewModel = viewModel
@@ -82,18 +79,26 @@ extension LineChartView {
 
 extension LineChartView {
     
-    private func compoundPath(from segments: [LineChartDataSegment], with viewModel: LineChartViewModel) -> CGPath {
+    private func compoundPath(from segments: [LineChartDataSegment], with viewModel: LineChartViewModel) -> UIBezierPath {
         let compoundPath = UIBezierPath()
         
         let paths = segments.map { segment in
             path(from: segment.dataPoints, with: viewModel)
         }
 
-        for path in paths {
+        for (index, path) in paths.enumerated() {
+            let nextIndex = index.advanced(by: 1)
+            
+            if let nextSegment = segments[safe: nextIndex],
+                let nextPathStart = firstVisualPoint(from: nextSegment, with: viewModel) {
+                
+                path.addLine(to: nextPathStart)
+            }
+            
             compoundPath.append(path)
         }
             
-        return compoundPath.cgPath
+        return compoundPath
     }
     
     private func path(from points: [LineChartDataPoint], with viewModel: LineChartViewModel) -> UIBezierPath {
@@ -113,6 +118,14 @@ extension LineChartView {
         }
 
         return path
+    }
+    
+    private func firstVisualPoint(from segment: LineChartDataSegment, with viewModel: LineChartViewModel) -> CGPoint? {
+        guard let firstDataPoint = segment.dataPoints.first else {
+            return nil
+        }
+        
+        return visualPoint(from: firstDataPoint, with: viewModel)
     }
 }
 
@@ -182,7 +195,7 @@ extension LineChartView {
             newViewModel: newViewModel
         )
         
-        shapeLayer.path = compoundPath(from: newViewModel.segments, with: newViewModel)
+        shapeLayer.path = compoundPath(from: newViewModel.segments, with: newViewModel).cgPath
         
         shapeLayer.add(
             ShapeLayerPathAnimation(
@@ -237,9 +250,6 @@ extension LineChartView {
             normalize(targetPoint, in: target)
         }
         
-        // Map each source point to a target point
-        // For all left over target points, interpolate between two closest source points
-        
         var result = [LineChartDataPoint]()
         var unmappedTargetPoints = Set(normalizedTargetPoints)
         
@@ -274,9 +284,6 @@ extension LineChartView {
         let normalizedTargetPoints = target.map { targetPoint in
             normalize(targetPoint, in: target)
         }
-        
-        // For each target point, find closest in source to map
-        // For unmapped source points, map to closest target point
         
         var result = normalizedTargetPoints
         var unmappedSourcePoints = Set(normalizedSourcePoints)
