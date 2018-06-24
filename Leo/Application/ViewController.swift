@@ -22,6 +22,9 @@ class ViewController: UIViewController {
     private var secondStyledDataSet: StyledLineChartDataSet!
     private var thirdStyledDataSet: StyledLineChartDataSet!
     
+    private var firstStyledReferenceLine: StyledLineChartReferenceLine!
+    private var thirdStyledReferenceLine: StyledLineChartReferenceLine!
+    
     private var finishedInitialLayout = false
     
     override func viewDidLoad() {
@@ -58,6 +61,11 @@ class ViewController: UIViewController {
             lineColor: Style.nonNegativeColor
         )
         
+        firstStyledReferenceLine = StyledLineChartReferenceLine(
+            referenceLine: LineChartReferenceLine(y: 25),
+            lineStyle: LineStyle(lineWidth: 2, lineColor: Style.gray, lineDashPattern: [0.0001, 4])
+        )
+        
         secondStyledDataSet = LineChartDataSetProvider.styledDataSet(
             startingAt: CGPoint(x: 0, y: 32),
             endingAt: CGPoint(x: 100, y: 68),
@@ -73,6 +81,11 @@ class ViewController: UIViewController {
             numberOfSegments: 3,
             lineColor: Style.nonNegativeColor
         )
+        
+        thirdStyledReferenceLine = StyledLineChartReferenceLine(
+            referenceLine: LineChartReferenceLine(y: 32),
+            lineStyle: LineStyle(lineWidth: 1, lineColor: Style.gray)
+        )
     }
     
     override func viewDidLayoutSubviews() {
@@ -82,7 +95,7 @@ class ViewController: UIViewController {
             return
         }
         
-        lineChartView.configure(with: viewModel(from: firstStyledDataSet))
+        lineChartView.configure(with: viewModel(from: firstStyledDataSet, and: firstStyledReferenceLine))
         
         finishedInitialLayout = true
     }
@@ -96,13 +109,14 @@ class ViewController: UIViewController {
 
 extension ViewController {
     
-    private func viewModel(from styledDataSet: StyledLineChartDataSet) -> LineChartViewModel {
+    private func viewModel(from styledDataSet: StyledLineChartDataSet, and styledReferenceLine: StyledLineChartReferenceLine?) -> LineChartViewModel {
         let viewModel = LineChartViewModel(
             minX: 0,
             maxX: 100,
             minY: 0,
             maxY: 100,
-            styledDataSet: styledDataSet
+            styledDataSet: styledDataSet,
+            styledReferenceLine: styledReferenceLine
         )
         
         return viewModel
@@ -141,7 +155,7 @@ extension ViewController {
         threeMonthLabel.textColor = Style.secondaryTextColor
         allTimeLabel.textColor = Style.secondaryTextColor
         
-        lineChartView.configure(with: viewModel(from: firstStyledDataSet))
+        lineChartView.configure(with: viewModel(from: firstStyledDataSet, and: firstStyledReferenceLine))
     }
     
     @objc private func threeMonthTapped() {
@@ -149,7 +163,7 @@ extension ViewController {
         threeMonthLabel.textColor = Style.textColor
         allTimeLabel.textColor = Style.secondaryTextColor
         
-        lineChartView.configure(with: viewModel(from: secondStyledDataSet))
+        lineChartView.configure(with: viewModel(from: secondStyledDataSet, and: nil))
     }
     
     @objc private func allTimeTapped() {
@@ -157,7 +171,7 @@ extension ViewController {
         threeMonthLabel.textColor = Style.secondaryTextColor
         allTimeLabel.textColor = Style.textColor
         
-        lineChartView.configure(with: viewModel(from: thirdStyledDataSet))
+        lineChartView.configure(with: viewModel(from: thirdStyledDataSet, and: thirdStyledReferenceLine))
     }
     
     private func updateTintColor(_ tintColor: UIColor) {

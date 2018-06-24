@@ -22,6 +22,7 @@ public class LineChartView: UIView {
     
     private let shapeLayer: CAShapeLayer
     private var selectedShapeLayer: CAShapeLayer?
+    private let referenceLineShapeLayer: CAShapeLayer
     private var selectionState: SelectionState = .none
     
     // MARK: - Initialization
@@ -37,15 +38,18 @@ public class LineChartView: UIView {
         self.deselectedSegmentAlpha = deselectedSegmentAlpha
         
         shapeLayer = CAShapeLayer.createLineChartLayer()
+        referenceLineShapeLayer = CAShapeLayer.createLineChartLayer()
 
         super.init(frame: .zero)
         
+        layer.addSublayer(referenceLineShapeLayer)
         layer.addSublayer(shapeLayer)
+        
         isMultipleTouchEnabled = true
         translatesAutoresizingMaskIntoConstraints = false
         
-        layer.borderColor = Style.white.withAlphaComponent(0.4).cgColor
-        layer.borderWidth = 1
+        layer.borderColor = Style.white.withAlphaComponent(0.2).cgColor
+        layer.borderWidth = 1 / UIScreen.main.scale
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -68,10 +72,15 @@ extension LineChartView {
         
         style(shapeLayer, with: viewModel.lineStyle)
         
+        if let referenceLineStyle = viewModel.referenceLineStyle {
+            style(referenceLineShapeLayer, with: referenceLineStyle)
+        }
+        
         if let currentViewModel = currentViewModel {
             animate(from: currentViewModel, to: viewModel)
         } else {
             shapeLayer.path = compoundPath(from: viewModel.dataSet.segments, with: viewModel).cgPath
+            referenceLineShapeLayer.path = referenceLinePath(from: viewModel.referenceLine, with: viewModel)?.cgPath
         }
         
         currentViewModel = viewModel
@@ -85,12 +94,45 @@ extension LineChartView {
     private func style(_ shapeLayer: CAShapeLayer, with lineStyle: LineStyle) {
         shapeLayer.strokeColor = lineStyle.lineColor.cgColor
         shapeLayer.lineWidth = lineStyle.lineWidth
+        shapeLayer.lineDashPattern = lineStyle.lineDashPattern as [NSNumber]?
     }
 }
 
 // MARK: - Path Creation
 
 extension LineChartView {
+    
+    private func referenceLinePath(from referenceLine: LineChartReferenceLine?, with viewModel: LineChartViewModel) -> UIBezierPath? {
+        guard let referenceLine = referenceLine else {
+            return nil
+        }
+        
+        let firstSegment = LineChartDataSegment(
+            dataPoints: [
+                LineChartDataPoint(x: viewModel.minX, y: referenceLine.y)
+            ]
+        )
+        
+        let lastSegment = LineChartDataSegment(
+            dataPoints: [
+                LineChartDataPoint(x: viewModel.maxX, y: referenceLine.y)
+            ]
+        )
+        
+        let segmentStartingPoints = viewModel.dataSet.segments.dropFirst().map { segment in
+            return segment.dataPoints.first!.x
+        }
+        
+        let referenceLineSegments = segmentStartingPoints.map { x in
+            return LineChartDataSegment(
+                dataPoints: [
+                    LineChartDataPoint(x: x, y: referenceLine.y)
+                ]
+            )
+        }
+        
+        return compoundPath(from: [firstSegment] + referenceLineSegments + [lastSegment], with: viewModel)
+    }
     
     private func compoundPath(from segments: [LineChartDataSegment], with viewModel: LineChartViewModel) -> UIBezierPath {
         let compoundPath = UIBezierPath()
@@ -556,6 +598,9 @@ extension LineChartView {
                 delegate: self
             )
         )
+        
+        selectedShapeLayer?.removeFromSuperlayer()
+        selectedShapeLayer = nil
     }
 }
 
@@ -606,9 +651,6 @@ extension LineChartView {
     
     private func clearLayers() {
         shapeLayer.path = nil
-        
-        selectedShapeLayer?.removeFromSuperlayer()
-        selectedShapeLayer = nil
     }
 }
 

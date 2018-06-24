@@ -11,6 +11,7 @@ import UIKit
 class Style {
     
     static let white: UIColor = .white
+    static let gray: UIColor = .lightGray
     static let backgroundColor: UIColor = UIColor(hue: 0.57, saturation: 0.8, brightness: 0.08, alpha: 1)
     static let textColor: UIColor = backgroundColor
     static let secondaryTextColor: UIColor = textColor.withAlphaComponent(0.6)
