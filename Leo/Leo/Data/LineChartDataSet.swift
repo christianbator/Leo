@@ -14,6 +14,10 @@ public struct LineChartDataSet: Equatable {
     public let referenceLine: LineChartReferenceLine?
     
     public init(segments: [LineChartDataSegment], referenceLine: LineChartReferenceLine? = nil) {
+        for segment in segments {
+            assert(!segment.isEmpty)
+        }
+        
         self.segments = segments
         self.referenceLine = referenceLine
     }
@@ -25,5 +29,9 @@ extension LineChartDataSet {
     
     public var isEmpty: Bool {
         return segments.reduce(true) { $0 && $1.isEmpty }
+    }
+    
+    public var allDataPoints: [LineChartDataPoint] {
+        return segments.flatMap { $0.dataPoints }
     }
 }

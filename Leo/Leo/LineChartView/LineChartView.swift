@@ -15,6 +15,7 @@ public class LineChartView: UIView {
     let insets: UIEdgeInsets
     let animationDuration: TimeInterval
     let animationTimingFunction: CAMediaTimingFunction
+    let deselectedSegmentAlpha: CGFloat
     private(set) var currentViewModel: LineChartViewModel?
     
     // MARK: - Private
@@ -26,11 +27,13 @@ public class LineChartView: UIView {
     
     public init(insets: UIEdgeInsets = .zero,
                 animationDuration: TimeInterval = defaultAnimationDuration,
-                animationTimingFunction: CAMediaTimingFunction = defaultAnimationTimingFunction) {
+                animationTimingFunction: CAMediaTimingFunction = defaultAnimationTimingFunction,
+                deselectedSegmentAlpha: CGFloat = defaultDeselectedSegmentAlpha) {
         
         self.insets = insets
         self.animationDuration = animationDuration
         self.animationTimingFunction = animationTimingFunction
+        self.deselectedSegmentAlpha = deselectedSegmentAlpha
         
         shapeLayer = CAShapeLayer.createLineChartLayer()
 
@@ -52,13 +55,21 @@ public class LineChartView: UIView {
 
 extension LineChartView {
     
-    public func configure(with viewModel: LineChartViewModel) {
-        style(with: viewModel)
+    public func configure(with viewModel: LineChartViewModel?) {
+        resetSelection()
+        
+        guard let viewModel = viewModel else {
+            clearLayers()
+            currentViewModel = nil
+            return
+        }
+        
+        style(shapeLayer, with: viewModel.lineStyle)
         
         if let currentViewModel = currentViewModel {
             animate(from: currentViewModel, to: viewModel)
         } else {
-            shapeLayer.path = compoundPath(from: viewModel.segments, with: viewModel).cgPath
+            shapeLayer.path = compoundPath(from: viewModel.dataSet.segments, with: viewModel).cgPath
         }
         
         currentViewModel = viewModel
@@ -69,9 +80,9 @@ extension LineChartView {
 
 extension LineChartView {
     
-    private func style(with viewModel: LineChartViewModel) {
-        shapeLayer.strokeColor = viewModel.styledDataSet.lineStyle.lineColor.cgColor
-        shapeLayer.lineWidth = viewModel.styledDataSet.lineStyle.lineWidth
+    private func style(_ shapeLayer: CAShapeLayer, with lineStyle: LineStyle) {
+        shapeLayer.strokeColor = lineStyle.lineColor.cgColor
+        shapeLayer.lineWidth = lineStyle.lineWidth
     }
 }
 
@@ -179,8 +190,8 @@ extension LineChartView {
 extension LineChartView {
     
     private func animate(from oldViewModel: LineChartViewModel, to newViewModel: LineChartViewModel) {
-        let oldDataPoints = oldViewModel.allDataPoints
-        let newDataPoints = newViewModel.allDataPoints
+        let oldDataPoints = oldViewModel.dataSet.allDataPoints
+        let newDataPoints = newViewModel.dataSet.allDataPoints
         
         let animationStartPath = createAnimationStartPath(
             oldDataPoints: oldDataPoints,
@@ -195,7 +206,7 @@ extension LineChartView {
             newViewModel: newViewModel
         )
         
-        shapeLayer.path = compoundPath(from: newViewModel.segments, with: newViewModel).cgPath
+        shapeLayer.path = compoundPath(from: newViewModel.dataSet.segments, with: newViewModel).cgPath
         
         shapeLayer.add(
             ShapeLayerPathAnimation(
@@ -388,43 +399,58 @@ extension LineChartView: CAAnimationDelegate {
 extension LineChartView {
     
     override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        
+        selectSegments(for: touches)
+    }
+    
+    override public func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesMoved(touches, with: event)
+        
+        selectSegments(for: touches)
+    }
+    
+    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        
+        deselectAllSegments()
+    }
+    
+    private func selectSegments(for touches: Set<UITouch>) {
         guard let currentViewModel = currentViewModel else {
             return
         }
         
-        assert(self.selectedShapeLayer == nil)
+        let selectedSegmentIndices = touches
+            .map { touch in
+                return touch.location(in: self)
+            }
+            .map { touchLocation in
+                return segmentIndex(forTouchLocation: touchLocation, with: currentViewModel)
+            }
         
-        let selectedShapeLayer = CAShapeLayer.createLineChartLayer()
+        let selectedSegments = Array(currentViewModel.dataSet.segments[selectedSegmentIndices.min()!...selectedSegmentIndices.max()!])
         
-        selectedShapeLayer.strokeColor = currentViewModel.styledDataSet.lineStyle.lineColor.cgColor
-        selectedShapeLayer.lineWidth = currentViewModel.styledDataSet.lineStyle.lineWidth
-        
-        selectedShapeLayer.path = path(
-            from: Array(currentViewModel.allDataPoints[10..<20]),
-            with: currentViewModel
-        ).cgPath
-        
-        layer.addSublayer(selectedShapeLayer)
+        let selectedShapeLayer = self.selectedShapeLayer ?? CAShapeLayer.createLineChartLayer()
+        selectedShapeLayer.path = compoundPath(from: selectedSegments, with: currentViewModel).cgPath
         
         shapeLayer.add(
             LayerAlphaAnimation(
-                toValue: 0.3,
+                toValue: deselectedSegmentAlpha,
                 duration: animationDuration,
                 timingFunction: animationTimingFunction,
                 delegate: self
             )
         )
         
-        self.selectedShapeLayer = selectedShapeLayer
+        if self.selectedShapeLayer == nil {
+            style(selectedShapeLayer, with: currentViewModel.lineStyle)
+            layer.addSublayer(selectedShapeLayer)
+            self.selectedShapeLayer = selectedShapeLayer
+        }
     }
     
-    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard currentViewModel != nil else {
-            return
-        }
-        
-        assert(selectedShapeLayer != nil)
-        
+    private func deselectAllSegments() {
         shapeLayer.add(
             LayerAlphaAnimation(
                 toValue: 1,
@@ -435,41 +461,47 @@ extension LineChartView {
         )
     }
     
-    private func segmentIndex(forVisualPoint visualPoint: CGPoint, with viewModel: LineChartViewModel) -> (segment: LineChartDataSegment, index: Int)? {
-        let dataPoint = self.dataPoint(from: visualPoint, with: viewModel)
+    private func segmentIndex(forTouchLocation touchLocation: CGPoint, with viewModel: LineChartViewModel) -> Int {
+        let selectedDataPoint = self.selectedDataPoint(forTouchLocation: touchLocation, with: viewModel)
         
-        let segmentIndex = viewModel.segments.enumerated().first(where: { (index, segment) -> Bool in
-            guard let first = segment.dataPoints.first,
-                let last = segment.dataPoints.last else {
-                    return false
+        let segmentIndex = viewModel.dataSet.segments.reversed().enumerated()
+            .first(where: { (_, segment) in
+                return selectedDataPoint.x >= segment.dataPoints.first!.x
+            })
+            .map { (offset, _) in
+                return (viewModel.dataSet.segments.count - 1) - offset
             }
-            
-            if first.x == dataPoint.x {
-                return true
-            }
-            
-            return first.x <= dataPoint.x && last.x > dataPoint.x
-        })
         
-        guard let validSegmentIndex = segmentIndex else {
-            return nil
-        }
-        
-        return (segment: validSegmentIndex.element, index: validSegmentIndex.offset)
+        return segmentIndex ?? 0
     }
     
-    private func highlightedPointSegment(forVisualPoint visualPoint: CGPoint,
-                                         with viewModel: LineChartViewModel) -> (dataPoint: LineChartDataPoint, segment: LineChartDataSegment)? {
+    private func selectedDataPoint(forTouchLocation touchLocation: CGPoint, with viewModel: LineChartViewModel) -> LineChartDataPoint {
+        let touchLocationDataPoint = dataPoint(from: touchLocation, with: viewModel)
         
-        let dataPoint = self.dataPoint(from: visualPoint, with: viewModel)
+        var closestPoint = viewModel.dataSet.allDataPoints.first!
         
-        guard let segmentIndex = self.segmentIndex(forVisualPoint: visualPoint, with: viewModel) else {
-            return nil
+        for point in viewModel.dataSet.allDataPoints.dropFirst()
+            where abs(touchLocationDataPoint.x - point.x) < abs(touchLocationDataPoint.x - closestPoint.x) {
+                closestPoint = point
         }
         
-        let closestDataPoint = point(closestTo: dataPoint, in: viewModel.allDataPoints)
+        return closestPoint
+    }
+}
+
+// MARK: - Resetting
+
+extension LineChartView {
+    
+    private func resetSelection() {
+        deselectAllSegments()
+    }
+    
+    private func clearLayers() {
+        shapeLayer.path = nil
         
-        return (dataPoint: closestDataPoint, segment: segmentIndex.segment)
+        selectedShapeLayer?.removeFromSuperlayer()
+        selectedShapeLayer = nil
     }
 }
 
@@ -479,6 +511,7 @@ extension LineChartView {
     
     public static let defaultAnimationDuration: TimeInterval = 0.3
     public static let defaultAnimationTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
+    public static let defaultDeselectedSegmentAlpha: CGFloat = 0.3
 }
 
 extension LineChartView {

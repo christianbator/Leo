@@ -26,6 +26,8 @@ public struct LineChartViewModel: Equatable {
                 styledDataSet: StyledLineChartDataSet,
                 styledReferenceLine: StyledLineChartReferenceLine? = nil) {
      
+        assert(!styledDataSet.dataSet.isEmpty)
+        
         let allDataPoints = styledDataSet.dataSet.segments.flatMap { $0.dataPoints }
         
         let sortedByXDataPoints = allDataPoints.sorted { $0.x < $1.x }
@@ -54,11 +56,19 @@ extension LineChartViewModel {
         return maxY - minY
     }
     
-    public var segments: [LineChartDataSegment] {
-        return styledDataSet.dataSet.segments
+    public var dataSet: LineChartDataSet {
+        return styledDataSet.dataSet
     }
     
-    public var allDataPoints: [LineChartDataPoint] {
-        return segments.flatMap { $0.dataPoints }
+    public var lineStyle: LineStyle {
+        return styledDataSet.lineStyle
+    }
+    
+    public var referenceLine: LineChartReferenceLine? {
+        return styledReferenceLine?.referenceLine
+    }
+    
+    public var referenceLineStyle: LineStyle? {
+        return styledReferenceLine?.lineStyle
     }
 }
