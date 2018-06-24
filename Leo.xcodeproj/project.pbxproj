@@ -31,6 +31,7 @@
 		AABEB08D20DDEFF300170B5E /* CGPath+AllPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB08C20DDEFF300170B5E /* CGPath+AllPoints.swift */; };
 		AABEB08F20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB08E20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift */; };
 		AABEB09820DE098500170B5E /* CustomBasicAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABEB09720DE098500170B5E /* CustomBasicAnimation.swift */; };
+		AAC085BE20DF7DD900FD58EA /* CATransaction+PerformWIthoutAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC085BD20DF7DD900FD58EA /* CATransaction+PerformWIthoutAnimation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +61,7 @@
 		AABEB08C20DDEFF300170B5E /* CGPath+AllPoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGPath+AllPoints.swift"; sourceTree = "<group>"; };
 		AABEB08E20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CAShapeLayer+LineChartLayer.swift"; sourceTree = "<group>"; };
 		AABEB09720DE098500170B5E /* CustomBasicAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBasicAnimation.swift; sourceTree = "<group>"; };
+		AAC085BD20DF7DD900FD58EA /* CATransaction+PerformWIthoutAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CATransaction+PerformWIthoutAnimation.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -205,6 +207,7 @@
 			children = (
 				AABEB08E20DE03FC00170B5E /* CAShapeLayer+LineChartLayer.swift */,
 				AA8EA9F020DEFF340086E3DD /* CALayer+CustomBasicAnimation.swift */,
+				AAC085BD20DF7DD900FD58EA /* CATransaction+PerformWIthoutAnimation.swift */,
 			);
 			path = "CoreAnimation Extensions";
 			sourceTree = "<group>";
@@ -298,6 +301,7 @@
 				AA8AC63A20B91988008C88BD /* CGPoint+Hashable.swift in Sources */,
 				AA8EA9F120DEFF340086E3DD /* CALayer+CustomBasicAnimation.swift in Sources */,
 				AAB7C95C20B918FF00D324D3 /* AppDelegate.swift in Sources */,
+				AAC085BE20DF7DD900FD58EA /* CATransaction+PerformWIthoutAnimation.swift in Sources */,
 				AABEB08D20DDEFF300170B5E /* CGPath+AllPoints.swift in Sources */,
 				AA8AC65220BA228D008C88BD /* LineChartDataPoint.swift in Sources */,
 				AA8EA9F620DEFF700086E3DD /* ShapeLayerPathAnimation.swift in Sources */,

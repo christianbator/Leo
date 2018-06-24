@@ -21,8 +21,11 @@ public class LineChartView: UIView {
     // MARK: - Private
     
     private let shapeLayer: CAShapeLayer
-    private var selectedShapeLayer: CAShapeLayer?
+    private let selectedShapeLayer: CAShapeLayer
     private let referenceLineShapeLayer: CAShapeLayer
+    private let selectedReferenceLineLayer: CAShapeLayer
+    private let selectedReferenceLineLayerMask: CALayer
+    
     private var selectionState: SelectionState = .none
     
     // MARK: - Initialization
@@ -38,13 +41,23 @@ public class LineChartView: UIView {
         self.deselectedSegmentAlpha = deselectedSegmentAlpha
         
         shapeLayer = CAShapeLayer.createLineChartLayer()
+        selectedShapeLayer = CAShapeLayer.createLineChartLayer()
         referenceLineShapeLayer = CAShapeLayer.createLineChartLayer()
+        selectedReferenceLineLayer = CAShapeLayer.createLineChartLayer()
+        selectedReferenceLineLayerMask = CALayer()
 
         super.init(frame: .zero)
         
         layer.addSublayer(referenceLineShapeLayer)
         layer.addSublayer(shapeLayer)
+        layer.addSublayer(selectedReferenceLineLayer)
         
+        CATransaction.performWithoutAnimation {
+            selectedReferenceLineLayerMask.backgroundColor = UIColor.white.cgColor
+            selectedReferenceLineLayerMask.opacity = 0
+            selectedReferenceLineLayer.mask = selectedReferenceLineLayerMask
+        }
+
         isMultipleTouchEnabled = true
         translatesAutoresizingMaskIntoConstraints = false
         
@@ -70,17 +83,14 @@ extension LineChartView {
             return
         }
         
-        style(shapeLayer, with: viewModel.lineStyle)
-        
-        if let referenceLineStyle = viewModel.referenceLineStyle {
-            style(referenceLineShapeLayer, with: referenceLineStyle)
-        }
-        
+        styleLayers(with: viewModel)
+
         if let currentViewModel = currentViewModel {
             animate(from: currentViewModel, to: viewModel)
         } else {
             shapeLayer.path = compoundPath(from: viewModel.dataSet.segments, with: viewModel).cgPath
             referenceLineShapeLayer.path = referenceLinePath(from: viewModel.referenceLine, with: viewModel)?.cgPath
+            selectedReferenceLineLayer.path = referenceLineShapeLayer.path
         }
         
         currentViewModel = viewModel
@@ -91,48 +101,26 @@ extension LineChartView {
 
 extension LineChartView {
     
-    private func style(_ shapeLayer: CAShapeLayer, with lineStyle: LineStyle) {
-        shapeLayer.strokeColor = lineStyle.lineColor.cgColor
-        shapeLayer.lineWidth = lineStyle.lineWidth
-        shapeLayer.lineDashPattern = lineStyle.lineDashPattern as [NSNumber]?
+    private func styleLayers(with viewModel: LineChartViewModel) {
+        CATransaction.performWithoutAnimation {
+            style(shapeLayer, with: viewModel.lineStyle)
+            style(selectedShapeLayer, with: viewModel.lineStyle)
+            style(referenceLineShapeLayer, with: viewModel.referenceLineStyle)
+            style(selectedReferenceLineLayer, with: viewModel.referenceLineStyle)
+            referenceLineShapeLayer.opacity = 0.3
+        }
+    }
+    
+    private func style(_ shapeLayer: CAShapeLayer, with lineStyle: LineStyle?) {
+        shapeLayer.strokeColor = lineStyle?.lineColor.cgColor
+        shapeLayer.lineWidth = lineStyle?.lineWidth ?? 0
+        shapeLayer.lineDashPattern = lineStyle?.lineDashPattern as [NSNumber]?
     }
 }
 
 // MARK: - Path Creation
 
 extension LineChartView {
-    
-    private func referenceLinePath(from referenceLine: LineChartReferenceLine?, with viewModel: LineChartViewModel) -> UIBezierPath? {
-        guard let referenceLine = referenceLine else {
-            return nil
-        }
-        
-        let firstSegment = LineChartDataSegment(
-            dataPoints: [
-                LineChartDataPoint(x: viewModel.minX, y: referenceLine.y)
-            ]
-        )
-        
-        let lastSegment = LineChartDataSegment(
-            dataPoints: [
-                LineChartDataPoint(x: viewModel.maxX, y: referenceLine.y)
-            ]
-        )
-        
-        let segmentStartingPoints = viewModel.dataSet.segments.dropFirst().map { segment in
-            return segment.dataPoints.first!.x
-        }
-        
-        let referenceLineSegments = segmentStartingPoints.map { x in
-            return LineChartDataSegment(
-                dataPoints: [
-                    LineChartDataPoint(x: x, y: referenceLine.y)
-                ]
-            )
-        }
-        
-        return compoundPath(from: [firstSegment] + referenceLineSegments + [lastSegment], with: viewModel)
-    }
     
     private func compoundPath(from segments: [LineChartDataSegment], with viewModel: LineChartViewModel) -> UIBezierPath {
         let compoundPath = UIBezierPath()
@@ -144,10 +132,8 @@ extension LineChartView {
         for (index, path) in paths.enumerated() {
             let nextIndex = index.advanced(by: 1)
             
-            if let nextSegment = segments[safe: nextIndex],
-                let nextPathStart = firstVisualPoint(from: nextSegment, with: viewModel) {
-                
-                path.addLine(to: nextPathStart)
+            if let nextSegment = segments[safe: nextIndex] {
+                path.addLine(to: firstVisualPoint(from: nextSegment, with: viewModel))
             }
             
             compoundPath.append(path)
@@ -163,11 +149,7 @@ extension LineChartView {
             visualPoint(from: point, with: viewModel)
         }
         
-        guard let firstVisualPoint = visualPoints.first else {
-            return path
-        }
-
-        path.move(to: firstVisualPoint)
+        path.move(to: visualPoints.first!)
         for visualPoint in visualPoints.dropFirst() {
             path.addLine(to: visualPoint)
         }
@@ -175,12 +157,25 @@ extension LineChartView {
         return path
     }
     
-    private func firstVisualPoint(from segment: LineChartDataSegment, with viewModel: LineChartViewModel) -> CGPoint? {
-        guard let firstDataPoint = segment.dataPoints.first else {
+    private func firstVisualPoint(from segment: LineChartDataSegment, with viewModel: LineChartViewModel) -> CGPoint {
+        return visualPoint(from: segment.dataPoints.first!, with: viewModel)
+    }
+    
+    private func lastVisualPoint(from segment: LineChartDataSegment, with viewModel: LineChartViewModel) -> CGPoint {
+        return visualPoint(from: segment.dataPoints.last!, with: viewModel)
+    }
+    
+    private func referenceLinePath(from referenceLine: LineChartReferenceLine?, with viewModel: LineChartViewModel) -> UIBezierPath? {
+        guard let referenceLine = referenceLine else {
             return nil
         }
         
-        return visualPoint(from: firstDataPoint, with: viewModel)
+        let referenceLineDataPoints = [
+            LineChartDataPoint(x: viewModel.minX, y: referenceLine.y),
+            LineChartDataPoint(x: viewModel.maxX, y: referenceLine.y),
+        ]
+        
+        return path(from: referenceLineDataPoints, with: viewModel)
     }
 }
 
@@ -432,8 +427,8 @@ extension LineChartView: CAAnimationDelegate {
         }
         
         if let alphaAnimation = animation as? LayerAlphaAnimation, alphaAnimation.alphaValue == 1 {
-            selectedShapeLayer?.removeFromSuperlayer()
-            selectedShapeLayer = nil
+            selectedShapeLayer.removeFromSuperlayer()
+            selectedReferenceLineLayer.removeFromSuperlayer()
         }
     }
 }
@@ -466,17 +461,18 @@ extension LineChartView {
         case .none:
             if sortedTouches.count == 1 {
                 selectionState = .single(touch: sortedTouches.first!)
+                updateSelectedSegments()
             } else {
                 selectionState = .range(left: sortedTouches.first!, right: sortedTouches[1])
+                updateSelectedSegments()
             }
         case .single(let touch):
             let rangeTouches = ([touch, sortedTouches.first!]).sorted(by: touchSorter)
             selectionState = .range(left: rangeTouches.first!, right: rangeTouches[1])
+            updateSelectedSegments()
         case .range:
             break
         }
-        
-        selectSegments(for: selectionState)
     }
     
     override public func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -487,13 +483,13 @@ extension LineChartView {
             break
         case .single(let touch):
             if touches.contains(touch) {
-                selectSegments(for: selectionState)
+                updateSelectedSegments()
             }
         case .range(let left, let right):
             if touches.contains(left) || touches.contains(right) {
                 let rangeTouches = [left, right].sorted(by: touchSorter)
                 selectionState = .range(left: rangeTouches.first!, right: rangeTouches[1])
-                selectSegments(for: selectionState)
+                updateSelectedSegments()
             }
         }
     }
@@ -517,19 +513,19 @@ extension LineChartView {
         case .single(let touch):
             if touches.contains(touch) {
                 selectionState = .none
-                selectSegments(for: selectionState)
+                updateSelectedSegments()
             }
         case .range(let left, let right):
             switch (touches.contains(left), touches.contains(right)) {
             case (true, true):
                 selectionState = .none
-                selectSegments(for: selectionState)
+                updateSelectedSegments()
             case (true, false):
                 selectionState = .single(touch: right)
-                selectSegments(for: selectionState)
+                updateSelectedSegments()
             case (false, true):
                 selectionState = .single(touch: left)
-                selectSegments(for: selectionState)
+                updateSelectedSegments()
             case (false, false):
                 break
             }
@@ -541,7 +537,7 @@ extension LineChartView {
 
 extension LineChartView {
     
-    private func selectSegments(for selectionState: SelectionState) {
+    private func updateSelectedSegments() {
         guard let currentViewModel = currentViewModel else {
             return
         }
@@ -570,8 +566,33 @@ extension LineChartView {
             return
         }
         
-        let selectedShapeLayer = self.selectedShapeLayer ?? CAShapeLayer.createLineChartLayer()
-        selectedShapeLayer.path = compoundPath(from: selectedSegments, with: currentViewModel).cgPath
+        if selectedReferenceLineLayer.superlayer == nil {
+            layer.addSublayer(selectedReferenceLineLayer)
+        }
+        
+        if selectedShapeLayer.superlayer == nil {
+            layer.addSublayer(selectedShapeLayer)
+        }
+        
+        let maskFrame: CGRect = {
+            let minX = firstVisualPoint(from: selectedSegments.first!, with: currentViewModel).x
+            let maxX = lastVisualPoint(from: selectedSegments.last!, with: currentViewModel).x
+            return CGRect(x: minX, y: bounds.minY, width: maxX - minX, height: bounds.height)
+        }()
+        
+        CATransaction.performWithoutAnimation {
+            selectedShapeLayer.path = compoundPath(from: selectedSegments, with: currentViewModel).cgPath
+            selectedReferenceLineLayerMask.frame = maskFrame
+        }
+        
+        selectedReferenceLineLayerMask.add(
+            LayerAlphaAnimation(
+                toValue: 1,
+                duration: animationDuration,
+                timingFunction: animationTimingFunction,
+                delegate: self
+            )
+        )
         
         shapeLayer.add(
             LayerAlphaAnimation(
@@ -581,12 +602,6 @@ extension LineChartView {
                 delegate: self
             )
         )
-        
-        if self.selectedShapeLayer == nil {
-            style(selectedShapeLayer, with: currentViewModel.lineStyle)
-            layer.addSublayer(selectedShapeLayer)
-            self.selectedShapeLayer = selectedShapeLayer
-        }
     }
     
     private func deselectAllSegments() {
@@ -599,8 +614,14 @@ extension LineChartView {
             )
         )
         
-        selectedShapeLayer?.removeFromSuperlayer()
-        selectedShapeLayer = nil
+        selectedReferenceLineLayerMask.add(
+            LayerAlphaAnimation(
+                toValue: 0,
+                duration: animationDuration,
+                timingFunction: animationTimingFunction,
+                delegate: self
+            )
+        )
     }
 }
 
@@ -617,7 +638,7 @@ extension LineChartView {
             })
             .map { (offset, _) in
                 return (viewModel.dataSet.segments.count - 1) - offset
-        }
+            }
         
         return segmentIndex ?? 0
     }
@@ -646,11 +667,17 @@ extension LineChartView {
     
     private func resetSelection() {
         selectionState = .none
-        selectSegments(for: selectionState)
+        selectedShapeLayer.removeFromSuperlayer()
+        selectedReferenceLineLayer.removeFromSuperlayer()
     }
     
     private func clearLayers() {
-        shapeLayer.path = nil
+        CATransaction.performWithoutAnimation {
+            shapeLayer.path = nil
+            selectedShapeLayer.path = nil
+            referenceLineShapeLayer.path = nil
+            selectedReferenceLineLayer.path = nil
+        }
     }
 }
 
