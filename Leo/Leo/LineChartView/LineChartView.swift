@@ -22,6 +22,7 @@ public class LineChartView: UIView {
     
     private let shapeLayer: CAShapeLayer
     private var selectedShapeLayer: CAShapeLayer?
+    private var selectionState: SelectionState = .none
     
     // MARK: - Initialization
     
@@ -40,6 +41,7 @@ public class LineChartView: UIView {
         super.init(frame: .zero)
         
         layer.addSublayer(shapeLayer)
+        isMultipleTouchEnabled = true
         translatesAutoresizingMaskIntoConstraints = false
         
         layer.borderColor = Style.white.withAlphaComponent(0.4).cgColor
@@ -394,42 +396,137 @@ extension LineChartView: CAAnimationDelegate {
     }
 }
 
-// MARK: - Interaction
+// MARK: - Selection State
+
+extension LineChartView {
+    
+    enum SelectionState {
+        case none
+        case single(touch: UITouch)
+        case range(left: UITouch, right: UITouch)
+    }
+}
+
+// MARK: - Touch Handling
 
 extension LineChartView {
     
     override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
         
-        selectSegments(for: touches)
+        guard !touches.isEmpty else {
+            return
+        }
+        
+        let sortedTouches = touches.sorted(by: touchSorter)
+        
+        switch selectionState {
+        case .none:
+            if sortedTouches.count == 1 {
+                selectionState = .single(touch: sortedTouches.first!)
+            } else {
+                selectionState = .range(left: sortedTouches.first!, right: sortedTouches[1])
+            }
+        case .single(let touch):
+            let rangeTouches = ([touch, sortedTouches.first!]).sorted(by: touchSorter)
+            selectionState = .range(left: rangeTouches.first!, right: rangeTouches[1])
+        case .range:
+            break
+        }
+        
+        selectSegments(for: selectionState)
     }
     
     override public func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesMoved(touches, with: event)
         
-        selectSegments(for: touches)
+        switch selectionState {
+        case .none:
+            break
+        case .single(let touch):
+            if touches.contains(touch) {
+                selectSegments(for: selectionState)
+            }
+        case .range(let left, let right):
+            if touches.contains(left) || touches.contains(right) {
+                let rangeTouches = [left, right].sorted(by: touchSorter)
+                selectionState = .range(left: rangeTouches.first!, right: rangeTouches[1])
+                selectSegments(for: selectionState)
+            }
+        }
     }
     
     override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
         
-        deselectAllSegments()
+        handleFinishedTouches(touches)
     }
     
-    private func selectSegments(for touches: Set<UITouch>) {
+    override public func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesCancelled(touches, with: event)
+        
+        handleFinishedTouches(touches)
+    }
+    
+    private func handleFinishedTouches(_ touches: Set<UITouch>) {
+        switch selectionState {
+        case .none:
+            break
+        case .single(let touch):
+            if touches.contains(touch) {
+                selectionState = .none
+                selectSegments(for: selectionState)
+            }
+        case .range(let left, let right):
+            switch (touches.contains(left), touches.contains(right)) {
+            case (true, true):
+                selectionState = .none
+                selectSegments(for: selectionState)
+            case (true, false):
+                selectionState = .single(touch: right)
+                selectSegments(for: selectionState)
+            case (false, true):
+                selectionState = .single(touch: left)
+                selectSegments(for: selectionState)
+            case (false, false):
+                break
+            }
+        }
+    }
+}
+
+// MARK: - Segment Selection
+
+extension LineChartView {
+    
+    private func selectSegments(for selectionState: SelectionState) {
         guard let currentViewModel = currentViewModel else {
             return
         }
         
-        let selectedSegmentIndices = touches
-            .map { touch in
-                return touch.location(in: self)
+        let selectedSegments: [LineChartDataSegment] = {
+            switch selectionState {
+            case .none:
+                return []
+            case .single(let touch):
+                let touchLocation = touch.location(in: self)
+                let selectedSegmentIndex = segmentIndex(forTouchLocation: touchLocation, with: currentViewModel)
+                return [currentViewModel.dataSet.segments[selectedSegmentIndex]]
+            case .range(let left, let right):
+                let leftLocation = left.location(in: self)
+                let rightLocation = right.location(in: self)
+                
+                let leftSegmentIndex = segmentIndex(forTouchLocation: leftLocation, with: currentViewModel)
+                let rightSegmentIndex = segmentIndex(forTouchLocation: rightLocation, with: currentViewModel)
+                
+                return Array(currentViewModel.dataSet.segments[leftSegmentIndex...rightSegmentIndex])
             }
-            .map { touchLocation in
-                return segmentIndex(forTouchLocation: touchLocation, with: currentViewModel)
-            }
+        }()
         
-        let selectedSegments = Array(currentViewModel.dataSet.segments[selectedSegmentIndices.min()!...selectedSegmentIndices.max()!])
+        guard !selectedSegments.isEmpty else {
+            deselectAllSegments()
+            return
+        }
         
         let selectedShapeLayer = self.selectedShapeLayer ?? CAShapeLayer.createLineChartLayer()
         selectedShapeLayer.path = compoundPath(from: selectedSegments, with: currentViewModel).cgPath
@@ -460,6 +557,11 @@ extension LineChartView {
             )
         )
     }
+}
+
+// MARK: - Interaction Utilities
+
+extension LineChartView {
     
     private func segmentIndex(forTouchLocation touchLocation: CGPoint, with viewModel: LineChartViewModel) -> Int {
         let selectedDataPoint = self.selectedDataPoint(forTouchLocation: touchLocation, with: viewModel)
@@ -470,7 +572,7 @@ extension LineChartView {
             })
             .map { (offset, _) in
                 return (viewModel.dataSet.segments.count - 1) - offset
-            }
+        }
         
         return segmentIndex ?? 0
     }
@@ -487,14 +589,19 @@ extension LineChartView {
         
         return closestPoint
     }
+    
+    private func touchSorter(firstTouch: UITouch, secondTouch: UITouch) -> Bool {
+        return firstTouch.location(in: self).x < secondTouch.location(in: self).x
+    }
 }
 
-// MARK: - Resetting
+// MARK: - Reset
 
 extension LineChartView {
     
     private func resetSelection() {
-        deselectAllSegments()
+        selectionState = .none
+        selectSegments(for: selectionState)
     }
     
     private func clearLayers() {
