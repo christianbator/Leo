@@ -39,8 +39,8 @@ public class LineChartView: UIView {
         layer.addSublayer(shapeLayer)
         translatesAutoresizingMaskIntoConstraints = false
         
-        layer.borderColor = Style.negativeColor.cgColor
-        layer.borderWidth = 2
+        layer.borderColor = Style.white.withAlphaComponent(0.4).cgColor
+        layer.borderWidth = 1
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -426,6 +426,43 @@ extension LineChartView {
                 delegate: self
             )
         )
+    }
+    
+    private func segmentIndex(forVisualPoint visualPoint: CGPoint, with viewModel: LineChartViewModel) -> (segment: LineChartDataSegment, index: Int)? {
+        let dataPoint = self.dataPoint(from: visualPoint, with: viewModel)
+        
+        let segmentIndex = viewModel.segments.enumerated().first(where: { (index, segment) -> Bool in
+            guard let first = segment.dataPoints.first,
+                let last = segment.dataPoints.last else {
+                    return false
+            }
+            
+            if first.x == dataPoint.x {
+                return true
+            }
+            
+            return first.x <= dataPoint.x && last.x > dataPoint.x
+        })
+        
+        guard let validSegmentIndex = segmentIndex else {
+            return nil
+        }
+        
+        return (segment: validSegmentIndex.element, index: validSegmentIndex.offset)
+    }
+    
+    private func highlightedPointSegment(forVisualPoint visualPoint: CGPoint,
+                                         with viewModel: LineChartViewModel) -> (dataPoint: LineChartDataPoint, segment: LineChartDataSegment)? {
+        
+        let dataPoint = self.dataPoint(from: visualPoint, with: viewModel)
+        
+        guard let segmentIndex = self.segmentIndex(forVisualPoint: visualPoint, with: viewModel) else {
+            return nil
+        }
+        
+        let closestDataPoint = point(closestTo: dataPoint, in: viewModel.allDataPoints)
+        
+        return (dataPoint: closestDataPoint, segment: segmentIndex.segment)
     }
 }
 
