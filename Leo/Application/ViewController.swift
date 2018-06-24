@@ -53,19 +53,25 @@ class ViewController: UIViewController {
         firstStyledDataSet = LineChartDataSetProvider.styledDataSet(
             startingAt: CGPoint(x: 0, y: 41),
             endingAt: CGPoint(x: 67, y: 17),
-            numberOfPoints: 60
+            numberOfPoints: 59,
+            numberOfSegments: 3,
+            lineColor: Style.nonNegativeColor
         )
         
         secondStyledDataSet = LineChartDataSetProvider.styledDataSet(
             startingAt: CGPoint(x: 0, y: 32),
             endingAt: CGPoint(x: 100, y: 68),
-            numberOfPoints: 90
+            numberOfPoints: 90,
+            numberOfSegments: 3,
+            lineColor: Style.nonNegativeColor
         )
         
         thirdStyledDataSet = LineChartDataSetProvider.styledDataSet(
             startingAt: CGPoint(x: 0, y: 36),
             endingAt: CGPoint(x: 80, y: 30),
-            numberOfPoints: 30
+            numberOfPoints: 30,
+            numberOfSegments: 3,
+            lineColor: Style.nonNegativeColor
         )
     }
     

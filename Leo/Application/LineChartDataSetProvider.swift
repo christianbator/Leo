@@ -13,9 +13,8 @@ class LineChartDataSetProvider {
     static func styledDataSet(startingAt start: CGPoint,
                               endingAt end: CGPoint,
                               numberOfPoints: Int,
-                              lineColor: UIColor = Style.nonNegativeColor) -> StyledLineChartDataSet {
-        
-        let lineStyle = LineStyle(lineWidth: 2, lineColor: lineColor)
+                              numberOfSegments: Int,
+                              lineColor: UIColor) -> StyledLineChartDataSet {
         
         let dataPoints = createPoints(
             startingAt: start,
@@ -23,17 +22,20 @@ class LineChartDataSetProvider {
             numberOfPoints: numberOfPoints
         )
         
-        let segment = LineChartDataSegment(
-            dataPoints: dataPoints
-        )
-        
-        let dataSet = LineChartDataSet(
-            segments: [segment]
-        )
+        let segments = dataPoints
+            .split(into: numberOfSegments)
+            .map { segmentDataPoints in
+                return LineChartDataSegment(dataPoints: segmentDataPoints)
+            }
         
         return StyledLineChartDataSet(
-            dataSet: dataSet,
-            lineStyle: lineStyle
+            dataSet: LineChartDataSet(
+                segments: segments
+            ),
+            lineStyle: LineStyle(
+                lineWidth: 2,
+                lineColor: lineColor
+            )
         )
     }
 }
@@ -55,5 +57,20 @@ extension LineChartDataSetProvider {
         }
         
         return points
+    }
+}
+
+// MARK: - Array+Segments
+
+extension Array {
+    
+    func split(into numberOfSegments: Int) -> [[Element]] {
+        let numberOfElementsPerSegment = Int(ceil(Double(count) / Double(numberOfSegments)))
+        
+        return (0 ..< numberOfSegments).map { segmentIndex in
+            let segmentStartIndex = segmentIndex * numberOfElementsPerSegment
+            let segmentEndIndex = Swift.min(segmentStartIndex + numberOfElementsPerSegment, endIndex)
+            return Array(self[segmentStartIndex ..< segmentEndIndex])
+        }
     }
 }
