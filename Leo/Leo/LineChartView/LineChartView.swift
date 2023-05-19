@@ -220,7 +220,7 @@ extension LineChartView {
     }
     
     private var insetBounds: CGRect {
-        return UIEdgeInsetsInsetRect(bounds, insets)
+        return bounds.inset(by: insets)
     }
 }
 
@@ -686,7 +686,7 @@ extension LineChartView {
 extension LineChartView {
     
     public static let defaultAnimationDuration: TimeInterval = 0.3
-    public static let defaultAnimationTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
+    public static let defaultAnimationTimingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
     public static let defaultDeselectedSegmentAlpha: CGFloat = 0.3
 }
 

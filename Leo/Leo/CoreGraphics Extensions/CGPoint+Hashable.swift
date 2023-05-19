@@ -10,10 +10,8 @@ import CoreGraphics
 
 extension CGPoint: Hashable {
     
-    public var hashValue: Int {
-        let shiftAmount = MemoryLayout<Int>.size * 8 / 2
-        let choppedX = x.hashValue >> shiftAmount
-        let choppedY = y.hashValue >> shiftAmount
-        return (choppedX << shiftAmount) | choppedY
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(x)
+        hasher.combine(y)
     }
 }

@@ -13,8 +13,8 @@ extension CAShapeLayer {
     static func createLineChartLayer() -> CAShapeLayer {
         let shapeLayer = CAShapeLayer()
         shapeLayer.fillColor = UIColor.clear.cgColor
-        shapeLayer.lineCap = kCALineCapRound
-        shapeLayer.lineJoin = kCALineCapRound
+        shapeLayer.lineCap = .round
+        shapeLayer.lineJoin = .round
         return shapeLayer
     }
 }
