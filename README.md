@@ -13,9 +13,9 @@ But how do you do this when the data sets have a different number of data points
 ## Idea
 The goal is get interruptible, point-to-point animations between line chart data sets regardless of the difference in number of data points.
 
-To do this, I think we should imagine a line that we can grow, shrink, and bend into as many segments as we want at any given time.
+To do this, I think we should imagine a line that can grow, shrink, and bend into as many segments as we want at any given time.
 
-A simple way to think about it is given the two interesting cases, either:
+A simple way to think about it is given the two cases:
 1. The target has more data points
 2. The source has more data points
 
@@ -27,39 +27,39 @@ So all we do is find the surrounding points in the source data set, "bend" the l
 
 ```swift
 private func createAnimationStartPoints(from source: [LineChartDataPoint], target: [LineChartDataPoint]) -> [LineChartDataPoint] {
-        guard source.count < target.count else {
-            return source
-        }
-        
-        let normalizedSourcePoints = source.map { sourcePoint in
-            normalize(sourcePoint, in: source)
-        }
-        
-        let normalizedTargetPoints = target.map { targetPoint in
-            normalize(targetPoint, in: target)
-        }
-        
-        var result = [LineChartDataPoint]()
-        var unmappedTargetPoints = Set(normalizedTargetPoints)
-        
-        for normalizedSourcePoint in normalizedSourcePoints {
-            let mappedTargetPoint = point(closestTo: normalizedSourcePoint, in: normalizedTargetPoints)
-            unmappedTargetPoints.remove(mappedTargetPoint)
-            result.append(normalizedSourcePoint)
-        }
-        
-        for unmappedTargetPoint in unmappedTargetPoints {
-            let surroundingPoints = points(surrounding: unmappedTargetPoint, in: normalizedSourcePoints)
-            let interpolatedSourcePoint = interpolate(normalized: unmappedTargetPoint, between: surroundingPoints.left, and: surroundingPoints.right)
-            result.append(interpolatedSourcePoint)
-        }
-        
-        return result
-            .sorted { $0.x < $1.x }
-            .map { normalizedSourcePoint in
-                denormalize(normalizedSourcePoint, in: source)
-            }
+    guard source.count < target.count else {
+        return source
     }
+    
+    let normalizedSourcePoints = source.map { sourcePoint in
+        normalize(sourcePoint, in: source)
+    }
+    
+    let normalizedTargetPoints = target.map { targetPoint in
+        normalize(targetPoint, in: target)
+    }
+    
+    var result = [LineChartDataPoint]()
+    var unmappedTargetPoints = Set(normalizedTargetPoints)
+    
+    for normalizedSourcePoint in normalizedSourcePoints {
+        let mappedTargetPoint = point(closestTo: normalizedSourcePoint, in: normalizedTargetPoints)
+        unmappedTargetPoints.remove(mappedTargetPoint)
+        result.append(normalizedSourcePoint)
+    }
+    
+    for unmappedTargetPoint in unmappedTargetPoints {
+        let surroundingPoints = points(surrounding: unmappedTargetPoint, in: normalizedSourcePoints)
+        let interpolatedSourcePoint = interpolate(normalized: unmappedTargetPoint, between: surroundingPoints.left, and: surroundingPoints.right)
+        result.append(interpolatedSourcePoint)
+    }
+    
+    return result
+        .sorted { $0.x < $1.x }
+        .map { normalizedSourcePoint in
+            denormalize(normalizedSourcePoint, in: source)
+        }
+}
 ```
 
 We're then left with two data sets that have the same number of points, each target point mapped to its closest x-value relative in the source data set. Now during animation, no points will "cross" each other or appear out of nowhere.
