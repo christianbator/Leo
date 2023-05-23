@@ -1,5 +1,5 @@
 # Leo
-Smooth line animations in Swift for iOS.
+Smooth line animations for iOS.
 
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
 
